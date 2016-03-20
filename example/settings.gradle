@@ -1,0 +1,5 @@
+include ':app'
+
+
+include ':feathers-android'
+project(':feathers-android').projectDir = new File(settingsDir, '../')
