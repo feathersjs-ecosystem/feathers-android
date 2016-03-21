@@ -1,6 +1,4 @@
-package com.smixxtape.feathersdemo.models;
-
-import java.io.Serializable;
+package org.feathersjs.feathersdemo.models;
 
 public class Todo {
     public String id;

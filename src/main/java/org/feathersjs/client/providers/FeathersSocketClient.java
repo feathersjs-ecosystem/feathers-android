@@ -10,47 +10,58 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 
+import org.feathersjs.client.Result;
+import org.feathersjs.client.callbacks.OnCreatedCallback;
+import org.feathersjs.client.callbacks.OnPatchedCallback;
+import org.feathersjs.client.callbacks.OnRemovedCallback;
+import org.feathersjs.client.callbacks.OnUpdatedCallback;
+import org.feathersjs.client.interfaces.IFeathersProvider;
 import org.feathersjs.client.utilities.Serialization;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Map;
 
 import org.feathersjs.client.FeathersService.FeathersCallback;
-import org.feathersjs.client.FeathersService.FeathersEventCallback;
 
 public class FeathersSocketClient<T> extends IFeathersProvider<T> {
 
     private String mServicePath = null;
     private Gson gson = null;
+    private boolean setup = false;
+    private FeathersSocketIO.Options mOptions = new FeathersSocketIO.Options();
     Class<T> mModelClass;
 
     private Socket socket;
 
-    public FeathersSocketClient() {
-
-    }
+//    public FeathersSocketClient(FeathersSocketConfiguration.Options options) {
+//        gson = new GsonBuilder().create();
+//        mOptions = options;
+//
+//    }
 
     public FeathersSocketClient(String baseUrl, String servicePath, Class<T> modelClass) {
         mModelClass = modelClass;
         mServicePath = servicePath;
         gson = new GsonBuilder().create();
 
-        configureSocket(baseUrl);
+        configureSocket(baseUrl, mOptions);
     }
 
 
+    public void setup() {
+//        configureSocket(Feathers.getInstance().getBaseUrl(), mOptions);
+    }
+
     @Override
-    public void find(Map<String, String> params, final FeathersCallback<List<T>> cb) {
+    public void find(Map<String, String> params, final FeathersCallback<Result<T>> cb) {
         JSONObject obj = new JSONObject(params);
         socket.emit(mServicePath + "::find", obj, new Ack() {
             @Override
             public void call(Object... args) {
-                JSONArray array = (JSONArray) args[1];
-                List<T> items = Serialization.deserializeArray(array, mModelClass, gson);
-                cb.onSuccess(items);
+                JSONObject array = (JSONObject) args[1];
+                Result<T> result = Serialization.deserializeArray(array, mModelClass, gson);
+                cb.onSuccess(result);
             }
         });
     }
@@ -113,41 +124,85 @@ public class FeathersSocketClient<T> extends IFeathersProvider<T> {
     }
 
     @Override
-    public void onCreated(final FeathersEventCallback<T> callback) {
-        listenForEvent("created", callback);
+    public void onCreated(final OnCreatedCallback<T> callback) {
+        final String eventName = "created";
+        socket.on(mServicePath + " " + eventName, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                if (args.length == 1) {
+                    JSONObject obj = (JSONObject) args[0];
+                    T item = gson.fromJson(obj.toString(), mModelClass);
+                    Log.d("socket:" + eventName + ":", obj.toString());
+                    callback.onCreated(item);
+                }
+            }
+        });
     }
 
     @Override
-    public void onUpdated(final FeathersEventCallback<T> callback) {
-        listenForEvent("updated", callback);
+    public void onUpdated(final OnUpdatedCallback<T> callback) {
+        final String eventName = "updated";
+        socket.on(mServicePath + " " + eventName, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                if (args.length == 1) {
+                    JSONObject obj = (JSONObject) args[0];
+                    T item = gson.fromJson(obj.toString(), mModelClass);
+                    Log.d("socket:" + eventName + ":", obj.toString());
+                    callback.onUpdated(item);
+                }
+            }
+        });
     }
 
     @Override
-    public void onRemoved(final FeathersEventCallback<T> callback) {
-        listenForEvent("removed", callback);
+    public void onRemoved(final OnRemovedCallback<T> callback) {
+        final String eventName = "removed";
+        socket.on(mServicePath + " " + eventName, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                if (args.length == 1) {
+                    JSONObject obj = (JSONObject) args[0];
+                    T item = gson.fromJson(obj.toString(), mModelClass);
+                    Log.d("socket:" + eventName + ":", obj.toString());
+                    callback.onRemoved(item);
+                }
+            }
+        });
     }
 
     @Override
-    public void onPatched(final FeathersEventCallback<T> callback) {
-        listenForEvent("patched", callback);
+    public void onPatched(final OnPatchedCallback<T> callback) {
+        final String eventName = "patched";
+        socket.on(mServicePath + " " + eventName, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                if (args.length == 1) {
+                    JSONObject obj = (JSONObject) args[0];
+                    T item = gson.fromJson(obj.toString(), mModelClass);
+                    Log.d("socket:" + eventName + ":", obj.toString());
+                    callback.onPatched(item);
+                }
+            }
+        });
     }
 
-    private void configureSocket(String baseUrl) {
+    private void configureSocket(String baseUrl, FeathersSocketIO.Options options) {
         IO.Options opts = new IO.Options();
-        opts.forceNew = true;
-        opts.reconnection = true;
+        opts.forceNew = options.forceNew;
+        opts.reconnection = options.reconnection;
 
         try {
             socket = IO.socket(baseUrl, opts);
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.d("SOCKET:", "Connected!");
+                    Log.d("SOCKET:", "Connected");
                 }
             }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.d("SOCKET:", "Disconnected!");
+                    Log.d("SOCKET:", "Disconnected");
                 }
             });
             socket.connect();
@@ -156,17 +211,19 @@ public class FeathersSocketClient<T> extends IFeathersProvider<T> {
         }
     }
 
-    private void listenForEvent(final String eventName, final FeathersEventCallback<T> callback) {
-        socket.on(mServicePath + " " + eventName, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                if (args.length == 1) {
-                    JSONObject obj = (JSONObject) args[0];
-                    T item = gson.fromJson(obj.toString(), mModelClass);
-                    Log.d("socket:" + eventName + ":", obj.toString());
-                    callback.onSuccess(item);
-                }
-            }
-        });
-    }
+//    private void listenForEvent(final String eventName, final OnEventCallback<T> callback) {
+//        socket.on(mServicePath + " " + eventName, new Emitter.Listener() {
+//            @Override
+//            public void call(Object... args) {
+//                if (args.length == 1) {
+//                    JSONObject obj = (JSONObject) args[0];
+//                    T item = gson.fromJson(obj.toString(), mModelClass);
+//                    Log.d("socket:" + eventName + ":", obj.toString());
+//                    callback.onSuccess(item);
+//                }
+//            }
+//        });
+//    }
+
+
 }

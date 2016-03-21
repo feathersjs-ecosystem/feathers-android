@@ -7,14 +7,17 @@ import com.google.gson.GsonBuilder;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.feathersjs.client.BaseService;
-import org.feathersjs.client.FeathersService;
-import org.feathersjs.client.utilities.Serialization;
+import org.feathersjs.client._UNUSED.BaseService;
+import org.feathersjs.client.Result;
+import org.feathersjs.client.callbacks.OnCreatedCallback;
+import org.feathersjs.client.callbacks.OnPatchedCallback;
+import org.feathersjs.client.callbacks.OnRemovedCallback;
+import org.feathersjs.client.callbacks.OnUpdatedCallback;
+import org.feathersjs.client.interfaces.IFeathersProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
@@ -50,7 +53,7 @@ public class FeathersRestClient<T> extends IFeathersProvider<T> {
 
 
     @Override
-    public void find(Map<String, String> params, final FeathersCallback<List<T>> cb) {
+    public void find(Map<String, String> params, final FeathersCallback<Result<T>> cb) {
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(this.mBaseUrl + this.mServiceName, new JsonHttpResponseHandler() {
             @Override
@@ -60,8 +63,8 @@ public class FeathersRestClient<T> extends IFeathersProvider<T> {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                List<T> items = Serialization.deserializeArray(array, mClass, gson);
-                cb.onSuccess(items);
+//                List<T> items = Serialization.deserializeArray(array, mClass, gson);
+//                cb.onSuccess(items);
             }
 
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
@@ -171,22 +174,22 @@ public class FeathersRestClient<T> extends IFeathersProvider<T> {
 
 
     @Override
-    public void onCreated(final FeathersService.FeathersEventCallback<T> callback) {
+    public void onCreated(final OnCreatedCallback<T> callback) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void onUpdated(final FeathersService.FeathersEventCallback<T> callback) {
+    public void onUpdated(final OnUpdatedCallback<T> callback) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void onRemoved(final FeathersService.FeathersEventCallback<T> callback) {
+    public void onRemoved(final OnRemovedCallback<T> callback) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void onPatched(final FeathersService.FeathersEventCallback<T> callback) {
+    public void onPatched(final OnPatchedCallback<T> callback) {
         throw new UnsupportedOperationException();
     }
 

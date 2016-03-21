@@ -1,4 +1,4 @@
-package com.smixxtape.feathersdemo;
+package org.feathersjs.feathersdemo;
 
 import android.util.SparseArray;
 import android.view.View;

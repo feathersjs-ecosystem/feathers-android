@@ -1,22 +1,21 @@
-package com.smixxtape.feathersdemo;
+package org.feathersjs.feathersdemo;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
-import org.feathersjs.client.Feathers;
 import org.feathersjs.client.FeathersService;
 
-import com.smixxtape.feathersdemo.models.Todo;
+import com.smixxtape.feathersdemo.R;
+
+import org.feathersjs.feathersdemo.models.Todo;
 
 import java.util.ArrayList;
 //import java.util.Iterator;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -46,34 +45,44 @@ public class MainActivity extends Activity {
 
         initializeAdapter();
 
-        // Set the URL at the root level
-        Feathers.setBaseUrl("http://demo.feathersjs.com/");
-        Feathers.use("todos", Todo.class);
-
         // Or pass in the URL as the last param for this service
         //Feathers.use("todos", TodoNew.class, Constants.URL_API_BASE);
 
-        todoService = Feathers.service("todos");
-        //todoService = new FeathersService<>(Constants.URL_API_BASE, "todos", TodoNew.class);
+//        FeathersService<Article> articleService = Feathers.service("posts");
+//        articleService.find(new FeathersService.FeathersCallback<Result<Article>>() {
+//            @Override
+//            public void onSuccess(Result<Article> result) {
+//                Log.d("Article:find:success", result.toString());
+//            }
+//
+//            @Override
+//            public void onError(String errorMessage) {
+//                Log.d("Article:find:error", errorMessage);
+//            }
+//        });
 
-        todoService.onCreated(new FeathersService.FeathersEventCallback<Todo>() {
-            @Override
-            public void onSuccess(final Todo todoNew) {
-                Log.d("onCreated", todoNew.id + "|" + todoNew.text);
-
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        todos.add(todoNew);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        });
+//        todoService = Feathers.service("todos");
+//        //todoService = new FeathersService<>(Constants.URL_API_BASE, "todos", TodoNew.class);
+//
+//        todoService.onCreated(new FeathersService.FeathersEventCallback<Todo>() {
+//            @Override
+//            public void onSuccess(final Todo todoNew) {
+//                Log.d("onCreated", todoNew.id + "|" + todoNew.text);
+//
+//                runOnUiThread(new Runnable() {
+//                    public void run() {
+//                        todos.add(todoNew);
+//                        mAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//        });
         //setupEvents();
 
-        fetchTodos();
+//        fetchTodos();
     }
 
+    /*
     private void setupEvents() {
         todoService.onCreated(new FeathersService.FeathersEventCallback<Todo>() {
             @Override
@@ -147,23 +156,23 @@ public class MainActivity extends Activity {
 
 
     private void fetchTodos() {
-        todoService.find(new FeathersService.FeathersCallback<List<Todo>>() {
-            @Override
-            public void onSuccess(List<Todo> list) {
-                Log.d("onSuccess", list.size() + "");
-                todos.addAll(list);
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Log.d("onError", errorMessage);
-            }
-        });
+//        todoService.find(new FeathersService.FeathersCallback<List<Todo>>() {
+//            @Override
+//            public void onSuccess(List<Todo> list) {
+//                Log.d("onSuccess", list.size() + "");
+//                todos.addAll(list);
+//                runOnUiThread(new Runnable() {
+//                    public void run() {
+//                        mAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onError(String errorMessage) {
+//                Log.d("onError", errorMessage);
+//            }
+//        });
     }
 
 
@@ -199,7 +208,7 @@ public class MainActivity extends Activity {
             }
         });
     }
-
+*/
 
     private void initializeAdapter() {
         // use this setting to improve performance if you know that changes
@@ -236,7 +245,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.sendButton)
     void addTodo() {
-        fetchTodos();
+        //fetchTodos();
 //        TodoNew todo = new TodoNew();
 //        todo.text = mEditText.getText().toString();
 //        todo.complete = false;

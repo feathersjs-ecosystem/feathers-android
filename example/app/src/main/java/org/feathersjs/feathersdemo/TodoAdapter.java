@@ -1,4 +1,4 @@
-package com.smixxtape.feathersdemo;
+package org.feathersjs.feathersdemo;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.smixxtape.feathersdemo.models.Todo;
+import com.smixxtape.feathersdemo.R;
+
+import org.feathersjs.feathersdemo.models.Todo;
 
 import java.util.ArrayList;
 

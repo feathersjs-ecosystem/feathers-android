@@ -42,5 +42,7 @@ dependencies {
 
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.loopj.android:android-async-http:1.4.9'
+    compile 'io.reactivex:rxjava:1.1.2'
+    compile 'io.reactivex:rxandroid:1.1.0'
     //compile 'de.greenrobot:eventbus:2.2.1'
 }

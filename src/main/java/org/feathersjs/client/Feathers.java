@@ -1,13 +1,22 @@
 package org.feathersjs.client;
 
 import android.util.Log;
+
+import org.feathersjs.client.providers.FeathersSocketClient;
+import org.feathersjs.client.providers.FeathersSocketIO;
+import org.feathersjs.client.interfaces.IFeathersProvider;
+import org.feathersjs.client.interfaces.IProviderConfiguration;
+
 import java.util.HashMap;
 
 public class Feathers {
 
     private static Feathers instance;
-    private HashMap<String, FeathersService> mServices;
+    private HashMap<String, FeathersService> registeredServices;
     private String mBaseUrl;
+    private IFeathersProvider mProvider;
+    private IProviderConfiguration mProviderConfiguration;
+    private FeathersAuthentication mFeathersAuthentication;
 
     public synchronized static Feathers getInstance() {
         if (instance == null) {
@@ -17,33 +26,63 @@ public class Feathers {
     }
 
     public Feathers() {
-        mServices = new HashMap<>();
+        registeredServices = new HashMap<>();
     }
 
-    public static <T> void use(String serviceName, Class<T> clazz) {
-        if(getInstance().mBaseUrl == null) {
-            Log.e("Feathers", "You must set call setBaseUrl before registering a service.");
-        } else {
-            FeathersService<T> service = new FeathersService<T>(getInstance().mBaseUrl, serviceName, clazz);
-            getInstance().mServices.put(serviceName, service);
+    public <T> Feathers use(String serviceName, Class<T> clazz) {
+        return this.use(serviceName, clazz, getBaseUrl());
+    }
+
+    public <T> Feathers use(String serviceName, Class<T> clazz, String baseUrl) {
+        if (baseUrl == null) {
+            Log.e("Feathers", "You must set pass in a baseUrl or call setBaseUrl on Feathers before registering a service.");
         }
-    }
-
-    public static <T> void use(String serviceName, Class<T> clazz, String baseUrl) {
-        // Use passed in URL
         FeathersService<T> service = new FeathersService<T>(baseUrl, serviceName, clazz);
-        getInstance().mServices.put(serviceName, service);
+        getInstance().registeredServices.put(serviceName, service);
+        return getInstance();
     }
 
-    public static void setBaseUrl(String baseUrl) {
+    public <T> Feathers configure(IProviderConfiguration providerConfig) {
+        mProviderConfiguration = providerConfig;
+        return getInstance();
+    }
+
+    public <T> Feathers configure(FeathersAuthentication authentication) {
+        mFeathersAuthentication = authentication;
+        return getInstance();
+    }
+
+
+    public Feathers setBaseUrl(String baseUrl) {
         getInstance().mBaseUrl = baseUrl;
+        return getInstance();
+    }
+
+    public String getBaseUrl() {
+        return mBaseUrl;
     }
 
     public static <T> FeathersService<T> service(String name) {
-        if(getInstance().mServices.containsKey(name)) {
-            //TODO: Fix this unchecked assignment
-            return getInstance().mServices.get(name);
+        if (getInstance().registeredServices.containsKey(name)) {
+            FeathersService<T> service = (FeathersService<T>)getInstance().registeredServices.get(name);
+            if (service != null && service.getProvider() == null) {
+                if(getInstance().mProviderConfiguration instanceof FeathersSocketIO) {
+                    service.setProvider(new FeathersSocketClient<T>(service.getBaseUrl(), service.getName(),service.getModelClass()));
+                }
+            }
+            return service;
         }
-        return null;
+        throw new NullPointerException();
+    }
+
+
+
+    /* Authentication */
+    public static void authenticate() {
+        getInstance().mFeathersAuthentication.authenticate();
+    }
+
+    public static void logout() {
+        getInstance().mFeathersAuthentication.logout();
     }
 }

@@ -1,12 +1,15 @@
-package org.feathersjs.client;
+package org.feathersjs.client.interfaces;
+
+import org.feathersjs.client.FeathersService;
+import org.feathersjs.client.Result;
 
 import java.util.List;
 import java.util.Map;
 
 public interface IFeathersService<T> {
-    void find(final FeathersService.FeathersCallback<List<T>> cb);
+    void find(final FeathersService.FeathersCallback<Result<T>> cb);
 
-    void find(Map<String, String> params, final FeathersService.FeathersCallback<List<T>> cb);
+    void find(Map<String, String> params, final FeathersService.FeathersCallback<Result<T>> cb);
 
     void get(String id, final FeathersService.FeathersCallback<T> cb);
 

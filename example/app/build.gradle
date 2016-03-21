@@ -5,7 +5,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "com.smixxtape.feathersdemo"
+        applicationId "org.feathersjs.feathersdemo"
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
