@@ -1,5 +1,11 @@
 package org.feathersjs.client.interfaces;
 
-public abstract class IFeathersConfiguration extends IFeathersConfigurable {
+import org.feathersjs.client.Feathers;
 
+public class IFeathersConfiguration extends IFeathersConfigurable {
+    private Feathers mApp;
+
+    public void setApp(Feathers feathers) {
+        mApp = feathers;
+    }
 }

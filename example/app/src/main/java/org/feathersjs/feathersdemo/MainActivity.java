@@ -1,18 +1,20 @@
 package org.feathersjs.feathersdemo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
-import org.feathersjs.client.FeathersService;
+import org.feathersjs.client.Feathers;
+import org.feathersjs.client.service.FeathersService;
 
-import com.smixxtape.feathersdemo.R;
-
-import org.feathersjs.feathersdemo.models.Todo;
+import org.feathersjs.client.service.OnCreatedCallback;
+import org.feathersjs.feathersdemo.models.Message;
 
 import java.util.ArrayList;
 //import java.util.Iterator;
@@ -20,7 +22,6 @@ import java.util.ArrayList;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
 
 
 public class MainActivity extends Activity {
@@ -32,8 +33,8 @@ public class MainActivity extends Activity {
     EditText mEditText;
 
     private RecyclerView.Adapter mAdapter;
-    FeathersService<Todo> todoService;
-    ArrayList<Todo> todos;
+    FeathersService<Message> messageService;
+    ArrayList<Message> messages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,45 +42,29 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        todos = new ArrayList<>();
+        messages = new ArrayList<>();
 
         initializeAdapter();
 
-        // Or pass in the URL as the last param for this service
-        //Feathers.use("todos", TodoNew.class, Constants.URL_API_BASE);
+        messageService = Feathers.getInstance().service("messages");
+        messageService.onCreated(new OnCreatedCallback<Message>() {
+            @Override
+            public void onCreated(final Message message) {
+                Log.d("onCreated", message._id + "|" + message.text);
 
-//        FeathersService<Article> articleService = Feathers.service("posts");
-//        articleService.find(new FeathersService.FeathersCallback<Result<Article>>() {
-//            @Override
-//            public void onSuccess(Result<Article> result) {
-//                Log.d("Article:find:success", result.toString());
-//            }
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//                Log.d("Article:find:error", errorMessage);
-//            }
-//        });
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        messages.add(message);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
 
-//        todoService = Feathers.service("todos");
-//        //todoService = new FeathersService<>(Constants.URL_API_BASE, "todos", TodoNew.class);
-//
-//        todoService.onCreated(new FeathersService.FeathersEventCallback<Todo>() {
-//            @Override
-//            public void onSuccess(final Todo todoNew) {
-//                Log.d("onCreated", todoNew.id + "|" + todoNew.text);
-//
-//                runOnUiThread(new Runnable() {
-//                    public void run() {
-//                        todos.add(todoNew);
-//                        mAdapter.notifyDataSetChanged();
-//                    }
-//                });
-//            }
-//        });
+
+        });
         //setupEvents();
 
-//        fetchTodos();
+        fetchMessages();
     }
 
     /*
@@ -210,20 +195,57 @@ public class MainActivity extends Activity {
     }
 */
 
+    private void fetchMessages() {
+//        messageService.find(new FeathersService.FeathersCallback<Result<Message>>() {
+//
+//            @Override
+//            public void onError(String errorMessage) {
+//
+//            }
+//
+////            @Override
+////            public void onSuccess(Message message) {
+////
+////            }
+//
+//
+////            @Override
+////            public void onSuccess(Result<Message> messageResult) {
+////
+////            }
+////
+////            @Override
+////            public void onSuccess(Result<Result<Message>> t) {
+////
+////            }
+//        });
+//            @Override
+//            public void onSuccess(List<Todo> list) {
+//                Log.d("onSuccess", list.size() + "");
+//                todos.addAll(list);
+//                runOnUiThread(new Runnable() {
+//                    public void run() {
+//                        mAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onError(String errorMessage) {
+//                Log.d("onError", errorMessage);
+//            }
+//        });
+    }
+
     private void initializeAdapter() {
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
 
-        // use a linear layout manager
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // specify an adapter (see also next example)
-
-        mAdapter = new TodoAdapter(todos);
-
-        //mAdapter = new MyAdapter(myDataset);
+        mAdapter = new MessagesAdapter(messages);
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -243,15 +265,25 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    @OnClick(R.id.loginButton)
+    void login() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.signupButton)
+    void signup() {
+        Intent intent = new Intent(this, SignupActivity.class);
+        startActivity(intent);
+    }
+
     @OnClick(R.id.sendButton)
-    void addTodo() {
-        //fetchTodos();
-//        TodoNew todo = new TodoNew();
-//        todo.text = mEditText.getText().toString();
-//        todo.complete = false;
-//        todoService.create(todo, new Feathers.FeathersCallback<TodoNew>() {
+    void send() {
+        Message message = new Message();
+        message.text = mEditText.getText().toString();
+//        Feathers.getInstance().service("messages").create(message, new FeathersService.FeathersCallback<Message>() {
 //            @Override
-//            public void onSuccess(TodoNew todoNew) {
+//            public void onSuccess(Message t) {
 //
 //            }
 //

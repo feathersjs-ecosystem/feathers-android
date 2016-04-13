@@ -30,6 +30,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="org.feathersjs.feathersdemo.LoginActivity"
+            android:label="Login" >
+        </activity>
+
+        <activity
+            android:name="org.feathersjs.feathersdemo.SignupActivity"
+            android:label="Create Account" >
+        </activity>
+
+        <activity
+            android:name="org.feathersjs.feathersdemo.LaunchActivity"
+            android:label="Launch" >
+        </activity>
+
+
     </application>
 
 </manifest>
