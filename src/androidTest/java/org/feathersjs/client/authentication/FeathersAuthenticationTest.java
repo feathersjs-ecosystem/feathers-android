@@ -2,8 +2,7 @@ package org.feathersjs.client.authentication;
 
 import org.feathersjs.client.Feathers;
 import org.feathersjs.client.plugins.authentication.FeathersAuthenticationConfiguration;
-import org.feathersjs.client.providers.FeathersRest;
-import org.feathersjs.client.providers.FeathersSocketIO;
+import org.feathersjs.client.plugins.providers.FeathersRest;
 import org.feathersjs.client.service.FeathersService;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +59,7 @@ public class FeathersAuthenticationTest {
     public void test_socket_authentication() {
         Feathers app = Feathers.newInstance();
         app.setBaseUrl("http://BASE.URL/");
-        app.configure(new FeathersSocketIO());
+//        app.configure(new FeathersSocketIO());
         app.configure(new FeathersAuthenticationConfiguration());
 
         // Log in

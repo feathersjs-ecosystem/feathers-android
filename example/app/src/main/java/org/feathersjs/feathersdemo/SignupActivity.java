@@ -43,7 +43,7 @@ public class SignupActivity extends Activity {
         user.email = mUsernameEditText.getText().toString();
         user.password =  mPasswordEditText.getText().toString();
 
-        Feathers.getInstance().service("users").create(user, new FeathersService.FeathersCallback<User>() {
+        Feathers.getInstance().service("users", User.class).create(user, new FeathersService.FeathersCallback<User>() {
             @Override
             public void onSuccess(User newUser) {
                 Log.d("LoginActivity", "create:onSuccess | " + newUser.email);

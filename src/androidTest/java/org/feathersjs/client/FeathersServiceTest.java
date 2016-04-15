@@ -2,7 +2,7 @@ package org.feathersjs.client;
 
 import com.github.nkzawa.socketio.client.Socket;
 
-import org.feathersjs.client.providers.FeathersSocketClient;
+//import org.feathersjs.client.providers.FeathersSocketClient;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.service.Result;
 import org.json.JSONObject;
@@ -26,7 +26,7 @@ public class FeathersServiceTest {
 
         service = new FeathersService<JSONObject>("http://www.hiphopne.ws", "posts", JSONObject.class);
 
-        FeathersSocketClient<JSONObject> mockFoo = (FeathersSocketClient<JSONObject>) mock(FeathersSocketClient.class);
+//        FeathersSocketClient<JSONObject> mockFoo = (FeathersSocketClient<JSONObject>) mock(FeathersSocketClient.class);
 //        when(mockFoo.getValue).thenReturn(new Bar());
 
 //        FeathersSocketClient<JSONObject> provider = new FeathersSocketClient<>("http://www.hiphopne.ws", "posts", JSONObject.class, null);

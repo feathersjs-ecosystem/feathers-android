@@ -2,19 +2,19 @@ package org.feathersjs.client.service;
 
 import java.util.Map;
 
-public interface IFeathersService {
-    <J> void find(final FeathersService.FeathersCallback<Result<J>> cb);
+public abstract class IFeathersService <T> {
+    abstract void find(final FeathersService.FeathersCallback<Result<T>> cb);
 
-    <J> void find(Map<String, String> params, final FeathersService.FeathersCallback<Result<J>> cb);
+    abstract void find(Map<String, String> params, final FeathersService.FeathersCallback<Result<T>> cb);
 
-    <J> void get(String id, final FeathersService.FeathersCallback<J> cb);
+    abstract void get(String id, final FeathersService.FeathersCallback<T> cb);
 
-    <J> void remove(String id, final FeathersService.FeathersCallback<J> cb);
+    abstract void remove(String id, final FeathersService.FeathersCallback<T> cb);
 
-    <J> void create(J item, final FeathersService.FeathersCallback<J> cb);
+    abstract <J> void create(J item, final FeathersService.FeathersCallback<T> cb);
 
-    <J> void update(String id, J item, final FeathersService.FeathersCallback<J> cb);
+    abstract void update(String id, T item, final FeathersService.FeathersCallback<T> cb);
 
-    <J> void patch(String id, J item, final FeathersService.FeathersCallback<J> cb);
+    abstract void patch(String id, T item, final FeathersService.FeathersCallback<T> cb);
 }
 

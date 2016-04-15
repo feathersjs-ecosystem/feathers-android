@@ -1,12 +1,10 @@
 package org.feathersjs.client.plugins.authentication;
 
+import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
 import org.feathersjs.client.Feathers;
-import org.feathersjs.client.plugins.hooks.HookCallback;
-import org.feathersjs.client.plugins.hooks.HookDoneCallback;
-import org.feathersjs.client.plugins.hooks.HookObject;
 import org.feathersjs.client.plugins.storage.IStorageProvider;
 import org.feathersjs.client.plugins.storage.InMemoryStorageProvider;
 import org.feathersjs.client.service.FeathersService;
@@ -18,6 +16,8 @@ import org.json.JSONObject;
 public class FeathersAuthentication extends IFeathersConfigurable {
 
     private Feathers mApp;
+    private Context mContext;
+    private IStorageProvider mStorage;
 
     public void setApp(Feathers feathers) {
         mApp = feathers;
@@ -28,50 +28,8 @@ public class FeathersAuthentication extends IFeathersConfigurable {
         Token
     }
 
-
     private AuthenticationOptions mOptions;
 
-    private HookCallback populateParams = new HookCallback() {
-        @Override
-        public void call(final HookObject t, final HookDoneCallback cb) {
-//            Log.d(TAG, "article:before:find hook 1 " + t.context.params);
-            Handler handler = new Handler();
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    t.context.params.put("user", "USER");
-                    t.context.params.put("token", "TOKEN");
-                    cb.onDone(t);
-                }
-            };
-            handler.postDelayed(runnable, 3000);
-        }
-    };
-
-    private HookCallback populateHeader = new HookCallback() {
-        @Override
-        public void call(final HookObject t, final HookDoneCallback cb) {
-//            Log.d(TAG, "article:before:find hook 1 " + t.context.params);
-
-
-            if (t.context.params.containsKey("token")) {
-
-//                hook.params.headers = Object.assign({}, {
-//                        [options.header || 'Authorization']: hook.params.token
-//                }, hook.params.headers);
-            }
-
-//            Handler handler = new Handler();
-//            Runnable runnable = new Runnable() {
-//                @Override
-//                public void run() {
-//                    t.context.params.put("TEST2", "TEST2");
-//                    cb.onDone(t);
-//                }
-//            };
-//            handler.postDelayed(runnable, 3000);
-        }
-    };
 
 //    export function populateParams() {
 //        return function(hook) {
@@ -106,15 +64,7 @@ public class FeathersAuthentication extends IFeathersConfigurable {
         return "jwt-token";
     }
 
-    public class AuthenticationOptions {
-        public String cookie;
-        public String tokenKey;
-        public String localEndpoint;
-        public String tokenEndpoint;
-        public String usernameField;
 
-        public IStorageProvider storage;
-    }
 
     public FeathersAuthentication(Feathers app) {
         this(null, app);
@@ -123,6 +73,7 @@ public class FeathersAuthentication extends IFeathersConfigurable {
     public FeathersAuthentication(AuthenticationOptions options, Feathers app) {
 
         mApp = app;
+//        mContext = context;
         mOptions = new AuthenticationOptions();
         mOptions.cookie = "feathers-jwt";
         mOptions.tokenKey = "feathers-jwt";
@@ -161,8 +112,10 @@ public class FeathersAuthentication extends IFeathersConfigurable {
             }
         }
 
-        mApp.use(mOptions.localEndpoint, JSONObject.class);
-        mApp.use(mOptions.tokenEndpoint, JSONObject.class);
+        mStorage = (IStorageProvider) mApp.get("storage");
+
+//        mApp.use(mOptions.localEndpoint, JSONObject.class);
+//        mApp.use(mOptions.tokenEndpoint, JSONObject.class);
 
         //TODO: Add hooks to populate header and params
     }
@@ -191,45 +144,27 @@ public class FeathersAuthentication extends IFeathersConfigurable {
 
         //TODO: Get token from storage and attempt login if present
         //TODO: Use provider to login via server using auth type
-        IStorageProvider storage = (IStorageProvider) mApp.get("storage");
-        Log.d("feathers-auth", "authenticate | " + storage.getItem("token"));
+
+        Log.d("feathers-auth", "authenticate | " + mStorage.getItem(mOptions.tokenKey));
 
 //        Feathers.service(endPoint).create();
 
-//        mApp.service(endPoint).create(payload, new FeathersService.FeathersCallback<JSONObject>() {
-//
-//            @Override
-//            public void onSuccess(Result<JSONObject> t) {
-//
-//            }
-//
-//            @Override
-//            public void onSuccess(JSONObject t) {
-//                cb.onSuccess(t);
-//            }
-//
-////            @Override
-////            public <J> void onSuccess(Result<J> t) {
-////
-////            }
-//
-////            @Override
-////            public void onSuccess(JSONObject t) {
-////                Log.d("feathers-auth", "authenticate:onSuccess | " + t);
-////                //TODO: Save token to storage
-////            }
-////
-////            @Override
-////            public void onSuccess(Result<JSONObject> t) {
-////
-////            }
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//                Log.e("feathers-auth", "authenticate:onError | " + errorMessage);
-//                cb.onError(errorMessage);
-//            }
-//        });
+        mApp.service(endPoint, JSONObject.class).create(payload, new FeathersService.FeathersCallback<JSONObject>() {
+
+            @Override
+            public void onSuccess(JSONObject t) {
+                Log.e("feathers-auth", "authenticate:onSuccess | " + t);
+                String token = t.optString("token");
+                mStorage.setItem(mOptions.tokenKey, token);
+                cb.onSuccess(t);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Log.e("feathers-auth", "authenticate:onError | " + errorMessage);
+                cb.onError(errorMessage);
+            }
+        });
     }
 
     public void logout() {

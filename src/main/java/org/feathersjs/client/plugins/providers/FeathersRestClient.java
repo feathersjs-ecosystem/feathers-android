@@ -19,13 +19,16 @@ import org.feathersjs.client.utilities.Serialization;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
 
-public class FeathersRestClient<T> extends IFeathersProvider {
+public class FeathersRestClient extends IFeathersProvider {
 
     private final String TAG = "feathers-rest";
     private final String mBaseUrl;
@@ -33,12 +36,10 @@ public class FeathersRestClient<T> extends IFeathersProvider {
     private final String mServiceUrl;
 
     private final Gson gson;
-    Class<T> mClass;
     private AsyncHttpClient mClient;
 
 
-    public FeathersRestClient(String baseUrl, String serviceName, Class<T> clazz, AsyncHttpClient client) {
-        mClass = clazz;
+    public FeathersRestClient(String baseUrl, String serviceName, AsyncHttpClient client) {
         mBaseUrl = baseUrl;
         mServiceName = serviceName;
         gson = new GsonBuilder().create();
@@ -51,25 +52,18 @@ public class FeathersRestClient<T> extends IFeathersProvider {
         }
     }
 
-    private <J> JsonHttpResponseHandler getHandler(final FeathersCallback<J> cb, final ServiceEvent serviceEvent) {
+    private <J> JsonHttpResponseHandler getHandler(final FeathersCallback<J> cb, final ServiceEvent serviceEvent, final Class<J> jClass) {
         return new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject object) {
                 Log.d(TAG, serviceEvent + ":onSuccess:" + object);
-
-//                if (isList) {
-//                    Result<T> result = (Result<T>) Serialization.deserializeArray(object, mClass, gson);
-//                    Log.d("getHandler", serviceEvent + " | LIST | " + result);
-//                    cb.onSuccess(result);
-//                } else {
-
-                String objectAsString = gson.toJson(object);
-                T item = gson.fromJson(objectAsString, mClass);
-//                    cb.onSuccess(item);
-//                    J item
-//                    Log.d("getHandler", serviceEvent + " | OBJ | " + item);
-
-//                }
+                J item = null;
+                if (jClass.isInstance(object)) {
+                    item = (J) object;
+                } else {
+                    item = gson.fromJson(object.toString(), jClass);
+                }
+                cb.onSuccess(item);
             }
 
             @Override
@@ -92,12 +86,12 @@ public class FeathersRestClient<T> extends IFeathersProvider {
         };
     }
 
-    private <J> JsonHttpResponseHandler getListHandler(final FeathersCallback<Result<J>> cb, final ServiceEvent serviceEvent) {
+    private <J> JsonHttpResponseHandler getListHandler(final FeathersCallback<Result<J>> cb, final ServiceEvent serviceEvent, final Class<J> jClass) {
         return new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject object) {
                 Log.d(TAG, serviceEvent + ":onSuccess:" + object);
-                Result<J> result = (Result<J>) Serialization.deserializeArray(object, mClass, gson);
+                Result<J> result = Serialization.deserializeArray(object, jClass, gson);
                 Log.d("getHandler", serviceEvent + " | LIST | " + result);
                 cb.onSuccess(result);
             }
@@ -131,58 +125,61 @@ public class FeathersRestClient<T> extends IFeathersProvider {
         return mClient;
     }
 
-//    @Override
-//    public void find(Map params, FeathersCallback cb) {
-//
-//    }
-
     @Override
-    public <J> void find(Map<String, String> params, final FeathersCallback<Result<J>> cb) {
+    public <J> void find(Map<String, String> params, final FeathersCallback<Result<J>> cb, final Class<J> jClass) {
         Log.d("REST:FIND", mServiceUrl);
-        getClientWithHeaders().get(mServiceUrl, getListHandler(cb, ServiceEvent.FIND));
+        getClientWithHeaders().get(mServiceUrl, getListHandler(cb, ServiceEvent.FIND, jClass));
     }
 
     @Override
-    public <J> void get(String id, final FeathersCallback<J> cb) {
+    public <J> void get(String id, final FeathersCallback<J> cb, Class<J> jClass) {
         String url = getURLForResource(id);
         Log.d("REST:GET", url);
-        getClientWithHeaders().get(url, getHandler(cb, ServiceEvent.GET));
+        getClientWithHeaders().get(url, getHandler(cb, ServiceEvent.GET, jClass));
     }
 
     @Override
-    public <J> void remove(String id, final FeathersCallback<J> cb) {
+    public <J> void remove(String id, final FeathersCallback<J> cb, final Class<J> jClass) {
         String url = getURLForResource(id);
         Log.d("REST:DELETE", url);
-        getClientWithHeaders().delete(url, getHandler(cb, ServiceEvent.REMOVE));
+        getClientWithHeaders().delete(url, getHandler(cb, ServiceEvent.REMOVE, jClass));
     }
 
     @Override
-    public <J> void create(J item, final FeathersCallback<J> cb) {
-
+    public <J, K> void create(J item, final FeathersCallback<K> cb, final Class<K> jClass) {
         Log.d("REST:CREATE", mServiceUrl);
 
-        String json = gson.toJson(item);
-        StringEntity entity = null;
+        StringEntity entity = Serialization.getEntityForObject(item, gson);
         try {
-            entity = new StringEntity(json);
-            getClientWithHeaders().post(null, mServiceUrl, entity, "application/json", getHandler(cb, ServiceEvent.CREATE));
-        } catch (UnsupportedEncodingException e) {
+            Log.d("REST:CREATE", entity.getContent().toString());
+            String inputLine;
+            BufferedReader br = new BufferedReader(new InputStreamReader(entity.getContent()));
+            try {
+                while ((inputLine = br.readLine()) != null) {
+                    System.out.println(inputLine);
+                }
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        getClientWithHeaders().post(null, mServiceUrl, entity, "application/json", getHandler(cb, ServiceEvent.CREATE, jClass));
     }
 
     @Override
-    public <J> void update(String id, J item, final FeathersCallback<J> cb) {
+    public <J> void update(String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
         String url = getURLForResource(id);
         Log.d("REST:UPDATE", url);
-        getClientWithHeaders().put(url, getHandler(cb, ServiceEvent.UPDATE));
+        getClientWithHeaders().put(url, getHandler(cb, ServiceEvent.UPDATE, jClass));
     }
 
     @Override
-    public <J> void patch(String id, J item, final FeathersCallback<J> cb) {
+    public <J> void patch(String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
         String url = getURLForResource(id);
         Log.d("REST:UPDATE", url);
-        getClientWithHeaders().patch(url, getHandler(cb, ServiceEvent.PATCH));
+        getClientWithHeaders().patch(url, getHandler(cb, ServiceEvent.PATCH, jClass));
     }
 
 
@@ -191,11 +188,10 @@ public class FeathersRestClient<T> extends IFeathersProvider {
     }
 
 
+
     /*
-
-    Service events
-
-     */
+        Service events
+    */
 
     //@Override
     public <J> void onCreated(final OnCreatedCallback<J> callback) {
@@ -207,7 +203,7 @@ public class FeathersRestClient<T> extends IFeathersProvider {
         throw new UnsupportedOperationException();
     }
 
-   // @Override
+    // @Override
     public <J> void onRemoved(final OnRemovedCallback<J> callback) {
         throw new UnsupportedOperationException();
     }

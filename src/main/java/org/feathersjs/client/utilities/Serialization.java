@@ -9,7 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class Serialization {
 
@@ -39,8 +42,24 @@ public class Serialization {
         return result;
     }
 
-//    public static <T> T deserializeObject(JSONObject object, Class<T> mModelClass, Gson gson) {
-//        T item = gson.fromJson(object.toString(), mModelClass);
-//        return item;
-//    }
+    public static <T> T deserializeObject(JSONObject object, Class<T> mModelClass, Gson gson) {
+        T item = gson.fromJson(object.toString(), mModelClass);
+        return item;
+    }
+
+    public static <J> StringEntity getEntityForObject(J item, Gson gson) {
+
+        String json;
+        if (item instanceof JSONObject)
+            json = item.toString();
+        else
+            json = gson.toJson(item);
+        StringEntity entity = null;
+        try {
+            entity = new StringEntity(json);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return entity;
+    }
 }

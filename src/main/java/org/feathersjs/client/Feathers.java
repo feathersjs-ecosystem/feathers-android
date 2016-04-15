@@ -4,10 +4,10 @@ import android.util.Log;
 
 import org.feathersjs.client.plugins.authentication.FeathersAuthentication;
 import org.feathersjs.client.plugins.authentication.FeathersAuthenticationConfiguration;
-import org.feathersjs.client.providers.FeathersRestClient;
-import org.feathersjs.client.providers.FeathersSocketClient;
-import org.feathersjs.client.providers.FeathersSocketIO;
-import org.feathersjs.client.providers.IProviderConfiguration;
+import org.feathersjs.client.plugins.providers.FeathersRestClient;
+//import org.feathersjs.client.plugins.providers.FeathersSocketClient;
+import org.feathersjs.client.plugins.providers.FeathersSocketIO;
+import org.feathersjs.client.plugins.providers.IProviderConfiguration;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.utilities.StringUtilities;
 import org.json.JSONObject;
@@ -72,9 +72,9 @@ public class Feathers {
         return this;
     }
 
-    public Feathers configure(FeathersAuthenticationConfiguration authentication) {
+    public Feathers configure(FeathersAuthenticationConfiguration authenticationConfig) {
         //TODO: Pass through options
-        mFeathersAuthentication = new FeathersAuthentication(this);
+        mFeathersAuthentication = new FeathersAuthentication(authenticationConfig.getOptions(), this);
         return this;
     }
 
@@ -88,27 +88,38 @@ public class Feathers {
         return mBaseUrl;
     }
 
-    public <J> FeathersService service(String name) {
+//    public <J> FeathersService service(String name) {
+//        name = StringUtilities.trimSlashesFromStartAndEnd(name);
+//        if (registeredServices.containsKey(name)) {
+//            return getServiceWithProvider(name);
+//        } else {
+//            // Service isn't registered so register it
+//            use(name, JSONObject.class);
+//            return getServiceWithProvider(name);
+//        }
+//    }
+
+    public <J> FeathersService<J> service(String name, Class<J> jClass) {
         name = StringUtilities.trimSlashesFromStartAndEnd(name);
         if (registeredServices.containsKey(name)) {
-            return getServiceWithProvider(name);
+            return getServiceWithProvider(name, jClass);
         } else {
-            use(name, JSONObject.class);
+            use(name, jClass);
 
             // Add a provider to the newly fetched service
-            return getServiceWithProvider(name);
+            return getServiceWithProvider(name, jClass);
         }
     }
 
-    private <J> FeathersService getServiceWithProvider(String name) {
-        FeathersService service =registeredServices.get(name);
+    private <J> FeathersService<J> getServiceWithProvider(String name, Class<J> jClass) {
+        FeathersService<J> service = registeredServices.get(name);
         if (service != null && service.getProvider() == null) {
             if (mProviderConfiguration instanceof FeathersSocketIO) {
-                service.setProvider(new FeathersSocketClient<J>(service.getBaseUrl(), service.getName(), service.getModelClass(), null));
+//                service.setProvider(new FeathersSocketClient<J>(service.getBaseUrl(), service.getName(), service.getModelClass(), null));
             } else {
 
                 // Use rest by default
-                service.setProvider(new FeathersRestClient<J>(service.getBaseUrl(), service.getName(), service.getModelClass(), null));
+                service.setProvider(new FeathersRestClient(service.getBaseUrl(), service.getName(), null));
             }
         }
         return service;

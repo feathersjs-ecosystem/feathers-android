@@ -24,7 +24,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
 
         public MessageViewHolder(View v) {
             super(v);
-            vText =  (TextView) v.findViewById(R.id.todo_text);
+            vText =  (TextView) v.findViewById(R.id.message_text);
         }
     }
 

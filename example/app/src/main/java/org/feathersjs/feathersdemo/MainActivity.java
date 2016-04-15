@@ -11,6 +11,10 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import org.feathersjs.client.Feathers;
+import org.feathersjs.client.plugins.authentication.AuthenticationOptions;
+import org.feathersjs.client.plugins.authentication.FeathersAuthenticationConfiguration;
+import org.feathersjs.client.plugins.providers.FeathersRest;
+import org.feathersjs.client.plugins.storage.SharedPreferencesStorageProvider;
 import org.feathersjs.client.service.FeathersService;
 
 import org.feathersjs.client.service.OnCreatedCallback;
@@ -23,6 +27,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static org.feathersjs.client.plugins.authentication.FeathersAuthenticationConfiguration.*;
+
 
 public class MainActivity extends Activity {
 
@@ -33,7 +39,7 @@ public class MainActivity extends Activity {
     EditText mEditText;
 
     private RecyclerView.Adapter mAdapter;
-    FeathersService<Message> messageService;
+    FeathersService messageService;
     ArrayList<Message> messages;
 
     @Override
@@ -46,154 +52,12 @@ public class MainActivity extends Activity {
 
         initializeAdapter();
 
-        messageService = Feathers.getInstance().service("messages");
-        messageService.onCreated(new OnCreatedCallback<Message>() {
-            @Override
-            public void onCreated(final Message message) {
-                Log.d("onCreated", message._id + "|" + message.text);
-
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        messages.add(message);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
 
 
-        });
-        //setupEvents();
 
-        fetchMessages();
-    }
-
-    /*
-    private void setupEvents() {
-        todoService.onCreated(new FeathersService.FeathersEventCallback<Todo>() {
-            @Override
-            public void onSuccess(final Todo todoNew) {
-                Log.d("onCreated", todoNew.id + "|" + todoNew.text);
-
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        getTodo(todoNew.id + "");
-                        todos.add(todoNew);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        });
-
-        todoService.onRemoved(new FeathersService.FeathersEventCallback<Todo>() {
-            @Override
-            public void onSuccess(final Todo todoNew) {
-                Log.d("onRemoved", todoNew.id + "|" + todoNew.text);
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        for (Todo todo : todos) {
-                            if (todoNew.id == todo.id) {
-                                todos.remove(todo);
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        }
-
-                    }
-                });
-            }
-        });
-
-        todoService.onUpdated(new FeathersService.FeathersEventCallback<Todo>() {
-            @Override
-            public void onSuccess(final Todo todoNew) {
-                Log.d("onUpdated", todoNew.id + "|" + todoNew.text);
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        for (Todo todo : todos) {
-                            if (todoNew.id == todo.id) {
-                                todo.text = todoNew.text;
-                                todo.complete = todoNew.complete;
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        todoService.onPatched(new FeathersService.FeathersEventCallback<Todo>() {
-            @Override
-            public void onSuccess(final Todo todoNew) {
-                Log.d("onPatched", todoNew.id + "|" + todoNew.text);
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        for (Todo todo : todos) {
-                            if (todoNew.id == todo.id) {
-                                todo.text = todoNew.text;
-                                todo.complete = todoNew.complete;
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        }
-                    }
-                });
-            }
-        });
     }
 
 
-    private void fetchTodos() {
-//        todoService.find(new FeathersService.FeathersCallback<List<Todo>>() {
-//            @Override
-//            public void onSuccess(List<Todo> list) {
-//                Log.d("onSuccess", list.size() + "");
-//                todos.addAll(list);
-//                runOnUiThread(new Runnable() {
-//                    public void run() {
-//                        mAdapter.notifyDataSetChanged();
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//                Log.d("onError", errorMessage);
-//            }
-//        });
-    }
-
-
-    private void getTodo(final String id) {
-        todoService.get(id, new FeathersService.FeathersCallback<Todo>() {
-            @Override
-            public void onSuccess(Todo todo) {
-                Log.d("getTodo:onSuccess", todo.toString());
-                Log.d("getTodo:onSuccess", todo.id + "");
-                Log.d("getTodo:onSuccess", todo.text + "");
-//                deleteTodo(id);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Log.d("getTodo:onError", errorMessage);
-            }
-        });
-    }
-
-    private void deleteTodo(String id) {
-        todoService.remove(id, new FeathersService.FeathersCallback<Todo>() {
-            @Override
-            public void onSuccess(Todo todo) {
-                Log.d("getTodo:onSuccess", todo.toString());
-                Log.d("getTodo:onSuccess", todo.id + "");
-                Log.d("getTodo:onSuccess", todo.text + "");
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Log.d("deleteTodo:onError", errorMessage);
-            }
-        });
-    }
-*/
 
     private void fetchMessages() {
 //        messageService.find(new FeathersService.FeathersCallback<Result<Message>>() {

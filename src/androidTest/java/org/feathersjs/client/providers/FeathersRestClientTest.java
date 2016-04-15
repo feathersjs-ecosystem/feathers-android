@@ -6,6 +6,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.feathersjs.client.plugins.providers.FeathersRestClient;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.service.Result;
 import org.json.JSONException;
@@ -33,7 +34,7 @@ public class FeathersRestClientTest {
 
     AsyncHttpClient mockRestClient;
     FeathersService.FeathersCallback<Result<TestClass>> spyCallback;
-    FeathersRestClient<TestClass> client;
+    FeathersRestClient client;
     TestClass testClass;
     JSONObject expectedJsonObject;
 
@@ -66,43 +67,43 @@ public class FeathersRestClientTest {
 //            }
 //        };
 
-        client = new FeathersRestClient<TestClass>("http://www.hiphopne.ws/", "posts", TestClass.class, mockRestClient);
+        client = new FeathersRestClient("http://www.hiphopne.ws/", "posts", mockRestClient);
     }
 
     @Test
     public void test_find() {
-        client.find(new HashMap<String, String>(), spyCallback);
+        client.find(new HashMap<String, String>(), spyCallback, TestClass.class);
         verify(mockRestClient).get(eq("http://www.hiphopne.ws/posts"), any(JsonHttpResponseHandler.class));
     }
 
     @Test
     public void test_get() {
-        client.get("123", null);
+        client.get("123", null, TestClass.class);
         verify(mockRestClient).get(eq("http://www.hiphopne.ws/posts/123"), any(JsonHttpResponseHandler.class));
     }
 
     @Test
     public void test_remove() {
-        client.remove("123", null);
+        client.remove("123", null, TestClass.class);
         verify(mockRestClient).delete(eq("http://www.hiphopne.ws/posts/123"), any(JsonHttpResponseHandler.class));
     }
 
     @Test
     public void test_create() {
-        client.create(testClass, null);
+        client.create(testClass, null, TestClass.class);
         verify(mockRestClient).post(any(Context.class), eq("http://www.hiphopne.ws/posts"), any(RequestParams.class), any(JsonHttpResponseHandler.class));
     }
 
 
     @Test
     public void test_update() {
-        client.update("123", testClass, null);
+        client.update("123", testClass, null, TestClass.class);
         verify(mockRestClient).put(eq("http://www.hiphopne.ws/posts/123"), any(RequestParams.class), any(JsonHttpResponseHandler.class));
     }
 
     @Test
     public void test_patch() {
-        client.patch("123", testClass, null);
+        client.patch("123", testClass, null, TestClass.class);
         verify(mockRestClient).patch(eq("http://www.hiphopne.ws/posts/123"), any(RequestParams.class), any(JsonHttpResponseHandler.class));
     }
 }
