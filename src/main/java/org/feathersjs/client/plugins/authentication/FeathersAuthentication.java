@@ -30,27 +30,8 @@ public class FeathersAuthentication extends IFeathersConfigurable {
 
     private AuthenticationOptions mOptions;
 
+    //TODO: Provide access to serialized user model and token?
 
-//    export function populateParams() {
-//        return function(hook) {
-//            const app = hook.app;
-//
-//            Object.assign(hook.params, {
-//                    user: app.get('user'),
-//                    token: app.get('token')
-//            });
-//        };
-//    }
-
-//    export function populateHeader(options = {}) {
-//        return function(hook) {
-//            if (hook.params.token) {
-//                hook.params.headers = Object.assign({}, {
-//                        [options.header || 'Authorization']: hook.params.token
-//                }, hook.params.headers);
-//            }
-//        };
-//    }
 
 
     public IStorageProvider getStorage(IStorageProvider provider) {
@@ -144,13 +125,9 @@ public class FeathersAuthentication extends IFeathersConfigurable {
             throw new UnsupportedOperationException("Unsupported authentication 'type':" + authType);
         }
 
-
-        //TODO: Get token from storage and attempt login if present
-        //TODO: Use provider to login via server using auth type
-
         Log.d("feathers-auth", "authenticate | " + mStorage.getItem(mOptions.tokenKey));
 
-//        Feathers.service(endPoint).create();
+        //TODO: Get token from storage and attempt login if present
 
         mApp.service(endPoint, JSONObject.class).create(payload, new FeathersService.FeathersCallback<JSONObject>() {
 
@@ -179,19 +156,3 @@ public class FeathersAuthentication extends IFeathersConfigurable {
         //TODO: Logout the socket
     }
 }
-
-
-//
-//
-//import errors from 'feathers-errors';
-//        import * as hooks from './hooks';
-//        import {
-//        connected,
-//        authenticateSocket,
-//        logoutSocket,
-//        getJWT,
-//        getStorage,
-//        clearCookie
-//        } from './utils';
-
-

@@ -1,5 +1,7 @@
 package org.feathersjs.client.service;
 
+import org.json.JSONObject;
+
 import java.util.Map;
 
 public abstract class IFeathersService <T> {
@@ -15,6 +17,6 @@ public abstract class IFeathersService <T> {
 
     abstract void update(String id, T item, final FeathersService.FeathersCallback<T> cb);
 
-    abstract void patch(String id, T item, final FeathersService.FeathersCallback<T> cb);
+    abstract void patch(String id, JSONObject item, final FeathersService.FeathersCallback<T> cb);
 }
 

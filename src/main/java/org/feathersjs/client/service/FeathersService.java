@@ -1,6 +1,7 @@
 package org.feathersjs.client.service;
 
 import org.feathersjs.client.plugins.providers.IFeathersProvider;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -78,7 +79,7 @@ public class FeathersService<T> extends IFeathersService<T> {
     }
 
     @Override
-    public void patch(String id, T item, FeathersCallback<T> cb) {
+    public void patch(String id, JSONObject item, FeathersCallback<T> cb) {
         mProvider.patch(id, item, cb, mModelClass);
     }
 

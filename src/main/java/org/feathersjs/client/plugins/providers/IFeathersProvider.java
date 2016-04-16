@@ -7,6 +7,7 @@ import org.feathersjs.client.service.OnPatchedCallback;
 import org.feathersjs.client.service.OnRemovedCallback;
 import org.feathersjs.client.service.OnUpdatedCallback;
 import org.feathersjs.client.service.Result;
+import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public abstract class IFeathersProvider extends IFeathersConfigurable {
 
     public abstract <J>  void update(String id, J item, FeathersService.FeathersCallback<J> cb, Class<J> jClass);
 
-    public abstract <J> void patch(String id, J item, FeathersService.FeathersCallback<J> cb, Class<J> jClass);
+    public abstract <J> void patch(String id, JSONObject item, FeathersService.FeathersCallback<J> cb, Class<J> jClass);
 
 
     // Service Events

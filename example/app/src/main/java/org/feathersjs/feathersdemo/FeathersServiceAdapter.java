@@ -12,6 +12,7 @@ import android.widget.TextView;
 import org.feathersjs.client.Feathers;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.service.OnCreatedCallback;
+import org.feathersjs.client.service.OnPatchedCallback;
 import org.feathersjs.client.service.OnRemovedCallback;
 import org.feathersjs.client.service.OnUpdatedCallback;
 import org.feathersjs.client.service.Result;
@@ -58,15 +59,15 @@ public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extend
 
         mService.onRemoved(new OnRemovedCallback<T>() {
             @Override
-            public void onRemoved(final T removedMessage) {
-                Log.d("onRemoved", removedMessage.toString());
+            public void onRemoved(final T removedItem) {
+                Log.d("onRemoved", removedItem.toString());
                 mActivity.runOnUiThread(new Runnable() {
                     public void run() {
 
                         Iterator<T> iter = mDataset.iterator();
                         while (iter.hasNext()) {
-                            T message = iter.next();
-                            if (message.equals(removedMessage)) {
+                            T item = iter.next();
+                            if (item.equals(removedItem)) {
                                 iter.remove();
                                 notifyDataSetChanged();
                             }
@@ -79,13 +80,13 @@ public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extend
 
         mService.onUpdated(new OnUpdatedCallback<T>() {
             @Override
-            public void onUpdated(final T updatedMessage) {
-                Log.d("onUpdated", updatedMessage.toString());
+            public void onUpdated(final T updatedItem) {
+                Log.d("onUpdated", updatedItem.toString());
                 mActivity.runOnUiThread(new Runnable() {
                     public void run() {
-                        for (T message : mDataset) {
-                            if (updatedMessage.equals(message)) {
-                                mDataset.set(mDataset.indexOf(message), updatedMessage);
+                        for (T item : mDataset) {
+                            if (updatedItem.equals(item)) {
+                                mDataset.set(mDataset.indexOf(item), updatedItem);
                                 notifyDataSetChanged();
                             }
                         }
@@ -94,23 +95,29 @@ public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extend
             }
         });
 
-//        mService.onPatched(new FeathersService.FeathersEventCallback<Message>() {
-//            @Override
-//            public void onSuccess(final Todo todoNew) {
-//                Log.d("onPatched", todoNew.id + "|" + todoNew.text);
-//                runOnUiThread(new Runnable() {
-//                    public void run() {
-//                        for (Todo todo : todos) {
-//                            if (todoNew.id == todo.id) {
-//                                todo.text = todoNew.text;
-//                                todo.complete = todoNew.complete;
-//                                mAdapter.notifyDataSetChanged();
-//                            }
-//                        }
-//                    }
-//                });
-//            }
-//        });
+        mService.onPatched(new OnPatchedCallback<T>() {
+            @Override
+            public void onPatched(final T patchedItem) {
+                Log.d("onPatched", patchedItem.toString());
+                mActivity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        int currentIndex = 0;
+                        int indexToUpdate = 0;
+                        Iterator<T> iter = mDataset.iterator();
+                        while (iter.hasNext()) {
+                            T item = iter.next();
+                            if (item.equals(patchedItem)) {
+                                indexToUpdate = currentIndex;
+                                iter.remove();
+                                notifyDataSetChanged();
+                            }
+                            currentIndex++;
+                        }
+                        mDataset.add(indexToUpdate, patchedItem);
+                    }
+                });
+            }
+        });
     }
 
     public void reload() {

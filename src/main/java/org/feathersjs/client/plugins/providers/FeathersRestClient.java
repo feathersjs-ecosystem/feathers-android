@@ -190,6 +190,29 @@ public class FeathersRestClient extends IFeathersProvider {
         Log.d("REST:CREATE", mServiceUrl);
 
         StringEntity entity = Serialization.getEntityForObject(item, gson);
+        logEntity(entity);
+        getClientWithHeaders().post(null, mServiceUrl, entity, "application/json", getHandler(cb, ServiceEvent.CREATE, jClass));
+    }
+
+    @Override
+    public <J> void update(String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
+        String url = getURLForResource(id);
+        Log.d("REST:UPDATE", url);
+        getClientWithHeaders().put(url, getHandler(cb, ServiceEvent.UPDATE, jClass));
+    }
+
+    @Override
+    public <J> void patch(String id, JSONObject item, final FeathersCallback<J> cb, final Class<J> jClass) {
+        String url = getURLForResource(id);
+        Log.d("REST:PATCH", url);
+
+        StringEntity entity = Serialization.getEntityForObject(item, gson);
+        logEntity(entity);
+
+        getClientWithHeaders().patch(null, url, entity, "application/json", getHandler(cb, ServiceEvent.PATCH, jClass));
+    }
+
+    private void logEntity(StringEntity entity) {
         try {
             Log.d("REST:CREATE", entity.getContent().toString());
             String inputLine;
@@ -205,23 +228,8 @@ public class FeathersRestClient extends IFeathersProvider {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        getClientWithHeaders().post(null, mServiceUrl, entity, "application/json", getHandler(cb, ServiceEvent.CREATE, jClass));
-    }
 
-    @Override
-    public <J> void update(String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
-        String url = getURLForResource(id);
-        Log.d("REST:UPDATE", url);
-        getClientWithHeaders().put(url, getHandler(cb, ServiceEvent.UPDATE, jClass));
     }
-
-    @Override
-    public <J> void patch(String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
-        String url = getURLForResource(id);
-        Log.d("REST:UPDATE", url);
-        getClientWithHeaders().patch(url, getHandler(cb, ServiceEvent.PATCH, jClass));
-    }
-
 
     private String getURLForResource(String id) {
         return this.mServiceUrl + "/" + id;
