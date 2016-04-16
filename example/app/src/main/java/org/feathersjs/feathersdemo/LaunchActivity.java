@@ -1,6 +1,7 @@
 package org.feathersjs.feathersdemo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,4 +33,15 @@ public class LaunchActivity extends Activity {
         super.onDestroy();
     }
 
+    @OnClick(R.id.loginButton)
+    void login() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.signupButton)
+    void signup() {
+        Intent intent = new Intent(this, SignupActivity.class);
+        startActivity(intent);
+    }
 }

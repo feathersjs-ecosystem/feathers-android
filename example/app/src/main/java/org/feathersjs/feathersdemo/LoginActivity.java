@@ -1,6 +1,7 @@
 package org.feathersjs.feathersdemo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
@@ -41,6 +42,8 @@ public class LoginActivity extends Activity {
             @Override
             public void onSuccess(Object t) {
                 Log.d("LoginActivity", "onSuccess | " + t.toString());
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
             }
 
             @Override

@@ -61,7 +61,10 @@ public class FeathersAuthentication extends IFeathersConfigurable {
     }
 
     public String getJWT() {
-        return "jwt-token";
+        if(mStorage.getItem(mOptions.tokenKey) != null) {
+            return (String)mStorage.getItem(mOptions.tokenKey);
+        }
+        return null;
     }
 
 
@@ -153,7 +156,7 @@ public class FeathersAuthentication extends IFeathersConfigurable {
 
             @Override
             public void onSuccess(JSONObject t) {
-                Log.e("feathers-auth", "authenticate:onSuccess | " + t);
+                Log.d("feathers-auth", "authenticate:onSuccess | " + t);
                 String token = t.optString("token");
                 mStorage.setItem(mOptions.tokenKey, token);
                 cb.onSuccess(t);

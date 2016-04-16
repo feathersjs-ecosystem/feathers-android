@@ -14,7 +14,7 @@ public class SharedPreferencesStorageProvider implements IStorageProvider {
     }
 
     public Object getItem(String key) {
-        return mPreferences.getString(key, "");
+        return mPreferences.getString(key, null);
     }
     @Override
     public void setItem(String key, Object value) {

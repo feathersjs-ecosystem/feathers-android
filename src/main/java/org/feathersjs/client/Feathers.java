@@ -119,7 +119,7 @@ public class Feathers {
             } else {
 
                 // Use rest by default
-                service.setProvider(new FeathersRestClient(service.getBaseUrl(), service.getName(), null));
+                service.setProvider(new FeathersRestClient(service.getBaseUrl(), service.getName(), mFeathersAuthentication, null));
             }
         }
         return service;

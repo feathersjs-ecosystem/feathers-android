@@ -40,9 +40,8 @@
             android:id="@+id/loginButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="20dp"
-            android:textSize="20sp"
-            android:text="Login" />
+            android:text="Login"
+            android:background="#e2717f" />
 
     </LinearLayout>
 

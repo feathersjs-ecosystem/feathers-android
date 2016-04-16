@@ -22,7 +22,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="org.feathersjs.feathersdemo.MainActivity"
+            android:name="org.feathersjs.feathersdemo.LaunchActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,8 +42,8 @@
         </activity>
 
         <activity
-            android:name="org.feathersjs.feathersdemo.LaunchActivity"
-            android:label="Launch" >
+            android:name="org.feathersjs.feathersdemo.MainActivity"
+            android:label="Main" >
         </activity>
 
 

@@ -7,5 +7,17 @@ public class Message {
     public String text;
     public String userId;
     public User user;
-    public Date createdAt;
+    public String createdAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o != null) {
+            if (Message.class.isInstance(o)) {
+                Message messageToCompare = (Message) o;
+                if (messageToCompare._id != null && _id != null)
+                    return messageToCompare._id.equalsIgnoreCase(_id);
+            }
+        }
+        return super.equals(o);
+    }
 }

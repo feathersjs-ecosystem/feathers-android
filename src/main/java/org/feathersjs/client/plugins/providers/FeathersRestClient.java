@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.feathersjs.client.plugins.authentication.FeathersAuthentication;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.service.FeathersService.FeathersCallback;
 import org.feathersjs.client.service.OnCreatedCallback;
@@ -34,22 +35,54 @@ public class FeathersRestClient extends IFeathersProvider {
     private final String mBaseUrl;
     private final String mServiceName;
     private final String mServiceUrl;
+    private final FeathersAuthentication mAuthentication;
+
+    private OnCreatedCallback mOnCreatedCallback;
+    private OnRemovedCallback mOnRemovedCallback;
+    private OnUpdatedCallback mOnUpdatedCallback;
+    private OnPatchedCallback mOnPatchedCallback;
 
     private final Gson gson;
     private AsyncHttpClient mClient;
 
 
-    public FeathersRestClient(String baseUrl, String serviceName, AsyncHttpClient client) {
+    public FeathersRestClient(String baseUrl, String serviceName, FeathersAuthentication authentication, AsyncHttpClient client) {
         mBaseUrl = baseUrl;
         mServiceName = serviceName;
         gson = new GsonBuilder().create();
         mClient = client;
+        mAuthentication = authentication;
 
         mServiceUrl = this.mBaseUrl + "/" + this.mServiceName;
 
         if (client == null) {
             mClient = new AsyncHttpClient();
         }
+    }
+
+    private <J> void sendEvent(ServiceEvent event, J item) {
+        try {
+            if (event == ServiceEvent.CREATE) {
+                if (mOnCreatedCallback != null) {
+                    mOnCreatedCallback.onCreated(item);
+                }
+            } else if (event == ServiceEvent.UPDATE) {
+                if (mOnUpdatedCallback != null) {
+                    mOnUpdatedCallback.onUpdated(item);
+                }
+            } else if (event == ServiceEvent.REMOVE) {
+                if (mOnRemovedCallback != null) {
+                    mOnRemovedCallback.onRemoved(item);
+                }
+            } else if (event == ServiceEvent.PATCH) {
+                if (mOnPatchedCallback != null) {
+                    mOnPatchedCallback.onPatched(item);
+                }
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "Error sending event:" + event, ex);
+        }
+
     }
 
     private <J> JsonHttpResponseHandler getHandler(final FeathersCallback<J> cb, final ServiceEvent serviceEvent, final Class<J> jClass) {
@@ -64,6 +97,8 @@ public class FeathersRestClient extends IFeathersProvider {
                     item = gson.fromJson(object.toString(), jClass);
                 }
                 cb.onSuccess(item);
+
+                sendEvent(serviceEvent, item);
             }
 
             @Override
@@ -121,6 +156,11 @@ public class FeathersRestClient extends IFeathersProvider {
         //TODO: Set custom headers from params
 //        AsyncHttpClient client = new SyncHttpClient();
 //        client.addHeader("Content-Type", "application/json");
+        if (mAuthentication != null && mAuthentication.getJWT() != null) {
+            mClient.removeHeader("Authorization");
+            mClient.addHeader("Authorization", mAuthentication.getJWT());
+        }
+
         mClient.addHeader("Accept", "application/json");
         return mClient;
     }
@@ -195,23 +235,21 @@ public class FeathersRestClient extends IFeathersProvider {
 
     //@Override
     public <J> void onCreated(final OnCreatedCallback<J> callback) {
-        throw new UnsupportedOperationException();
+        mOnCreatedCallback = callback;
     }
 
     //@Override
     public <J> void onUpdated(final OnUpdatedCallback<J> callback) {
-        throw new UnsupportedOperationException();
+        mOnUpdatedCallback = callback;
     }
 
     // @Override
     public <J> void onRemoved(final OnRemovedCallback<J> callback) {
-        throw new UnsupportedOperationException();
+        mOnRemovedCallback = callback;
     }
 
     //@Override
     public <J> void onPatched(final OnPatchedCallback<J> callback) {
-        throw new UnsupportedOperationException();
+        mOnPatchedCallback = callback;
     }
-
-
 }

@@ -22,7 +22,7 @@ public class DemoApplication extends Application {
         options.storage = storage;
 
         Feathers.getInstance()
-                .setBaseUrl("http://192.168.0.10:3030")
+                .setBaseUrl("http://10.0.1.2:3030")
                 .configure(new FeathersRest())
                 .configure(new FeathersAuthenticationConfiguration(options));
     }

@@ -7,38 +7,33 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="org.feathersjs.feathersdemo.MainActivity">
+    tools:context="org.feathersjs.feathersdemo.MainActivity"
+    android:background="@android:color/white">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="60dp"
-        android:layout_above="@+id/my_recycler_view"
-        android:background="@android:color/white"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:visibility="visible">
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="50dp"
+        android:layout_height="45dp"
+        android:src="@mipmap/feathers_banner" />
 
-        <EditText
-            android:id="@+id/textbox"
-            android:layout_width="260dp"
-            android:layout_height="wrap_content"
-            android:textColor="#000"
-            />
 
-        <Button
-            android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/textbox"
-            android:text="SEND" />
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:background="#aaa"
+        android:layout_marginBottom="10dp"/>
 
-    </RelativeLayout>
+    <Button
+        android:id="@+id/signupButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Signup"
+        android:background="#e2717f"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:scrollbars="vertical" />
+
 
 
 

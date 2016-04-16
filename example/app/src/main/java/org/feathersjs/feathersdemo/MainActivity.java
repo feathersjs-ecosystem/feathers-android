@@ -8,7 +8,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.feathersjs.client.Feathers;
 import org.feathersjs.client.plugins.authentication.AuthenticationOptions;
@@ -18,6 +20,9 @@ import org.feathersjs.client.plugins.storage.SharedPreferencesStorageProvider;
 import org.feathersjs.client.service.FeathersService;
 
 import org.feathersjs.client.service.OnCreatedCallback;
+import org.feathersjs.client.service.OnRemovedCallback;
+import org.feathersjs.client.service.OnUpdatedCallback;
+import org.feathersjs.client.service.Result;
 import org.feathersjs.feathersdemo.models.Message;
 
 import java.util.ArrayList;
@@ -29,18 +34,17 @@ import butterknife.OnClick;
 
 import static org.feathersjs.client.plugins.authentication.FeathersAuthenticationConfiguration.*;
 
-
 public class MainActivity extends Activity {
 
     @Bind(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
 
+    YourAdapter<Message> mAdapter;
+    FeathersService<Message> messageService;
+    ArrayList<Message> mItems;
+
     @Bind(R.id.textbox)
     EditText mEditText;
-
-    private RecyclerView.Adapter mAdapter;
-    FeathersService messageService;
-    ArrayList<Message> messages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,69 +52,22 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        messages = new ArrayList<>();
-
         initializeAdapter();
-
-
-
-
-    }
-
-
-
-    private void fetchMessages() {
-//        messageService.find(new FeathersService.FeathersCallback<Result<Message>>() {
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//
-//            }
-//
-////            @Override
-////            public void onSuccess(Message message) {
-////
-////            }
-//
-//
-////            @Override
-////            public void onSuccess(Result<Message> messageResult) {
-////
-////            }
-////
-////            @Override
-////            public void onSuccess(Result<Result<Message>> t) {
-////
-////            }
-//        });
-//            @Override
-//            public void onSuccess(List<Todo> list) {
-//                Log.d("onSuccess", list.size() + "");
-//                todos.addAll(list);
-//                runOnUiThread(new Runnable() {
-//                    public void run() {
-//                        mAdapter.notifyDataSetChanged();
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//                Log.d("onError", errorMessage);
-//            }
-//        });
+        mAdapter.reload();
     }
 
     private void initializeAdapter() {
+        mItems = new ArrayList<>();
+        messageService = Feathers.getInstance().service("messages", Message.class);
+        mAdapter = new YourAdapter(this, messageService, R.layout.item_message);
+        mRecyclerView.setAdapter(mAdapter);
+
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
-
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new MessagesAdapter(messages);
-        mRecyclerView.setAdapter(mAdapter);
     }
 
     @Override
@@ -129,32 +86,35 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    @OnClick(R.id.loginButton)
-    void login() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-    }
-
-    @OnClick(R.id.signupButton)
-    void signup() {
-        Intent intent = new Intent(this, SignupActivity.class);
-        startActivity(intent);
-    }
-
     @OnClick(R.id.sendButton)
-    void send() {
+    void createMessage() {
+
         Message message = new Message();
         message.text = mEditText.getText().toString();
-//        Feathers.getInstance().service("messages").create(message, new FeathersService.FeathersCallback<Message>() {
-//            @Override
-//            public void onSuccess(Message t) {
-//
-//            }
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//
-//            }
-//        });
+
+        messageService.create(message, new FeathersService.FeathersCallback<Message>() {
+            @Override
+            public void onSuccess(Message t) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mEditText.setText("");
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+        });
+    }
+
+    @OnClick(R.id.logoutButton)
+    void logout() {
+        Feathers.getInstance().logout();
+        Intent intent = new Intent(MainActivity.this, LaunchActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }
