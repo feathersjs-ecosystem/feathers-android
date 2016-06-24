@@ -55,9 +55,13 @@ public class MessagesAdapter extends FeathersServiceAdapter<Message, MessagesAda
             holder.vUsername.setText(message.sentBy.email);
         }
 
+        // Testing updating a message when clicking it
+        // This will throw an API error if you didn't create the message since we're not checking
+        // client side
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 final Message updatedMessage = message;
                 JSONObject obj = new JSONObject();
                 try {

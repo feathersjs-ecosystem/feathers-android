@@ -31,8 +31,8 @@ public class DemoApplication extends Application {
 
         Feathers.getInstance()
                 .setBaseUrl(BASE_URL)
-                .configure(new FeathersRest())
-//                .configure(new FeathersSocketIO())
+//                .configure(new FeathersRest())
+                .configure(new FeathersSocketIO())
                 .configure(new FeathersAuthenticationConfiguration(options));
     }
 }
