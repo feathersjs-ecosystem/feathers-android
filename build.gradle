@@ -1,0 +1,63 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.0-alpha5'
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+    }
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        debug {
+            testCoverageEnabled = true
+        }
+    }
+
+    sourceSets {
+        androidTest {
+            java.srcDirs = ['src/androidTest/java']
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile ('com.github.nkzawa:socket.io-client:0.4.2'){
+        exclude group: 'org.json', module: 'json'
+    }
+//    compile 'com.squareup.okhttp:okhttp:2.3.0'
+
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.loopj.android:android-async-http:1.4.9'
+
+    androidTestCompile 'junit:junit:4.12'
+    androidTestCompile 'org.mockito:mockito-core:1.9.5'
+    androidTestCompile 'com.android.support:support-annotations:23.0.1'
+    androidTestCompile 'com.android.support.test:runner:0.4.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.0'
+    androidTestCompile 'org.testng:testng:6.9.10'
+    androidTestCompile 'com.android.support.test:rules:0.4.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
+}
