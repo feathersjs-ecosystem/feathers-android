@@ -2,11 +2,14 @@ package org.feathersjs.client;
 
 import android.util.Log;
 
+import org.feathersjs.client.plugins.authentication.AuthResponse;
 import org.feathersjs.client.plugins.authentication.FeathersAuthentication;
 import org.feathersjs.client.plugins.authentication.FeathersAuthenticationConfiguration;
 import org.feathersjs.client.plugins.providers.FeathersRestClient;
 //import org.feathersjs.client.plugins.providers.FeathersSocketClient;
+import org.feathersjs.client.plugins.providers.FeathersSocketClient;
 import org.feathersjs.client.plugins.providers.FeathersSocketIO;
+import org.feathersjs.client.plugins.providers.IFeathersProvider;
 import org.feathersjs.client.plugins.providers.IProviderConfiguration;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.utilities.StringUtilities;
@@ -20,7 +23,7 @@ public class Feathers {
     private HashMap<String, FeathersService> registeredServices;
     private HashMap<String, Object> settings = new HashMap<>();
     private String mBaseUrl;
-//    private IFeathersProvider mProvider;
+    private IFeathersProvider mProvider;
     private IProviderConfiguration mProviderConfiguration;
     private FeathersAuthentication mFeathersAuthentication;
 
@@ -80,12 +83,26 @@ public class Feathers {
 
 
     public Feathers setBaseUrl(String baseUrl) {
-       mBaseUrl = StringUtilities.trimSlashesFromEnd(baseUrl);
+        mBaseUrl = StringUtilities.trimSlashesFromEnd(baseUrl);
         return this;
     }
 
     public String getBaseUrl() {
         return mBaseUrl;
+    }
+
+    public IFeathersProvider getProvider() {
+
+        if (mProvider == null) {
+            if (mProviderConfiguration instanceof FeathersSocketIO) {
+                mProvider = new FeathersSocketClient(this, mFeathersAuthentication, null);
+            } else {
+                // Use rest by default
+                mProvider = new FeathersRestClient(this, mFeathersAuthentication, null);
+            }
+        }
+
+        return mProvider;
     }
 
 //    public <J> FeathersService service(String name) {
@@ -113,26 +130,22 @@ public class Feathers {
 
     private <J> FeathersService<J> getServiceWithProvider(String name, Class<J> jClass) {
         FeathersService<J> service = registeredServices.get(name);
-        if (service != null && service.getProvider() == null) {
-            if (mProviderConfiguration instanceof FeathersSocketIO) {
-//                service.setProvider(new FeathersSocketClient<J>(service.getBaseUrl(), service.getName(), service.getModelClass(), null));
-            } else {
 
-                // Use rest by default
-                service.setProvider(new FeathersRestClient(service.getBaseUrl(), service.getName(), mFeathersAuthentication, null));
-            }
+
+
+        if (service != null && service.getProvider() == null) {
+            service.setProvider(mProvider);
         }
         return service;
     }
 
 
-
-    public void authenticate(FeathersAuthentication.AuthenticationType authType, String identifier, String password, FeathersService.FeathersCallback cb) {
-        mFeathersAuthentication.authenticate(authType, identifier, password, cb);
+    public <J> void authenticate(FeathersAuthentication.AuthenticationType authType, String identifier, String password, FeathersService.FeathersCallback cb, Class<J> jClass) {
+        mFeathersAuthentication.authenticate(authType, identifier, password, cb, jClass);
     }
 
-    public void authenticate(String identifier, String password, FeathersService.FeathersCallback cb) {
-        mFeathersAuthentication.authenticate(FeathersAuthentication.AuthenticationType.Local, identifier, password, cb);
+    public <J> void authenticate(String identifier, String password, FeathersService.FeathersCallback<AuthResponse<J>> cb, Class<J> jClass) {
+        mFeathersAuthentication.authenticate(FeathersAuthentication.AuthenticationType.Local, identifier, password, cb, jClass);
     }
 
     public void logout() {

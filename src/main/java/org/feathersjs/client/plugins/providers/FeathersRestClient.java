@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.feathersjs.client.Feathers;
 import org.feathersjs.client.plugins.authentication.FeathersAuthentication;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.service.FeathersService.FeathersCallback;
@@ -29,60 +30,24 @@ import java.util.Map;
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
 
-public class FeathersRestClient extends IFeathersProvider {
+public class FeathersRestClient extends FeathersBaseClient {
 
     private final String TAG = "feathers-rest";
-    private final String mBaseUrl;
-    private final String mServiceName;
-    private final String mServiceUrl;
-    private final FeathersAuthentication mAuthentication;
-
-    private OnCreatedCallback mOnCreatedCallback;
-    private OnRemovedCallback mOnRemovedCallback;
-    private OnUpdatedCallback mOnUpdatedCallback;
-    private OnPatchedCallback mOnPatchedCallback;
-
-    private final Gson gson;
     private AsyncHttpClient mClient;
 
-
-    public FeathersRestClient(String baseUrl, String serviceName, FeathersAuthentication authentication, AsyncHttpClient client) {
-        mBaseUrl = baseUrl;
-        mServiceName = serviceName;
+    public FeathersRestClient(Feathers feathers, FeathersAuthentication authentication, AsyncHttpClient client) {
+        mFeathers = feathers;
+//        mBaseUrl = baseUrl;
+//        mServiceName = serviceName;
         gson = new GsonBuilder().create();
         mClient = client;
         mAuthentication = authentication;
 
-        mServiceUrl = this.mBaseUrl + "/" + this.mServiceName;
+//        mServiceUrl = this.mBaseUrl + "/" + this.mServiceName;
 
-        if (client == null) {
-            mClient = new AsyncHttpClient();
-        }
-    }
-
-    private <J> void sendEvent(ServiceEvent event, J item) {
-        try {
-            if (event == ServiceEvent.CREATE) {
-                if (mOnCreatedCallback != null) {
-                    mOnCreatedCallback.onCreated(item);
-                }
-            } else if (event == ServiceEvent.UPDATE) {
-                if (mOnUpdatedCallback != null) {
-                    mOnUpdatedCallback.onUpdated(item);
-                }
-            } else if (event == ServiceEvent.REMOVE) {
-                if (mOnRemovedCallback != null) {
-                    mOnRemovedCallback.onRemoved(item);
-                }
-            } else if (event == ServiceEvent.PATCH) {
-                if (mOnPatchedCallback != null) {
-                    mOnPatchedCallback.onPatched(item);
-                }
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "Error sending event:" + event, ex);
-        }
-
+//        if (client == null) {
+//            mClient = new AsyncHttpClient();
+//        }
     }
 
     private <J> JsonHttpResponseHandler getHandler(final FeathersCallback<J> cb, final ServiceEvent serviceEvent, final Class<J> jClass) {
@@ -154,56 +119,61 @@ public class FeathersRestClient extends IFeathersProvider {
 
     private AsyncHttpClient getClientWithHeaders() {
         //TODO: Set custom headers from params
-//        AsyncHttpClient client = new SyncHttpClient();
+        AsyncHttpClient client = new AsyncHttpClient();
 //        client.addHeader("Content-Type", "application/json");
         if (mAuthentication != null && mAuthentication.getJWT() != null) {
-            mClient.removeHeader("Authorization");
-            mClient.addHeader("Authorization", mAuthentication.getJWT());
+//            client.removeHeader("Authorization");
+            client.addHeader("Authorization", mAuthentication.getJWT());
         }
 
-        mClient.addHeader("Accept", "application/json");
-        return mClient;
+        client.addHeader("Accept", "application/json");
+        return client;
     }
 
     @Override
-    public <J> void find(Map<String, String> params, final FeathersCallback<Result<J>> cb, final Class<J> jClass) {
-        Log.d("REST:FIND", mServiceUrl);
-        getClientWithHeaders().get(mServiceUrl, getListHandler(cb, ServiceEvent.FIND, jClass));
+    public <J> void find(String baseUrl, String serviceName, Map<String, String> params, final FeathersCallback<Result<J>> cb, final Class<J> jClass) {
+        String url = baseUrl + "/" + serviceName;
+        Log.d("REST:FIND", url);
+        getClientWithHeaders().get(url, getListHandler(cb, ServiceEvent.FIND, jClass));
     }
 
     @Override
-    public <J> void get(String id, final FeathersCallback<J> cb, Class<J> jClass) {
-        String url = getURLForResource(id);
+    public <J> void get(String baseUrl, String serviceName, String id, final FeathersCallback<J> cb, Class<J> jClass) {
+        String url = getURLForResource(baseUrl, serviceName, id);
         Log.d("REST:GET", url);
         getClientWithHeaders().get(url, getHandler(cb, ServiceEvent.GET, jClass));
     }
 
     @Override
-    public <J> void remove(String id, final FeathersCallback<J> cb, final Class<J> jClass) {
-        String url = getURLForResource(id);
+    public <J> void remove(String baseUrl, String serviceName, String id, final FeathersCallback<J> cb, final Class<J> jClass) {
+        String url = getURLForResource(baseUrl, serviceName, id);
         Log.d("REST:DELETE", url);
         getClientWithHeaders().delete(url, getHandler(cb, ServiceEvent.REMOVE, jClass));
     }
 
     @Override
-    public <J, K> void create(J item, final FeathersCallback<K> cb, final Class<K> jClass) {
-        Log.d("REST:CREATE", mServiceUrl);
+    public <J, K> void create(String baseUrl, String serviceName, J item, final FeathersCallback<K> cb, final Class<K> jClass) {
+        String url = baseUrl + "/" + serviceName;
+        Log.d("REST:CREATE", url);
+        StringEntity entity = Serialization.getEntityForObject(item, gson);
+        logEntity(entity);
+        getClientWithHeaders().post(null, url, entity, "application/json", getHandler(cb, ServiceEvent.CREATE, jClass));
+    }
+
+    @Override
+    public <J> void update(String baseUrl, String serviceName, String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
+        String url = getURLForResource(baseUrl, serviceName, id);
+        Log.d("REST:UPDATE", url);
 
         StringEntity entity = Serialization.getEntityForObject(item, gson);
         logEntity(entity);
-        getClientWithHeaders().post(null, mServiceUrl, entity, "application/json", getHandler(cb, ServiceEvent.CREATE, jClass));
+
+        getClientWithHeaders().put(null, url, entity, "application/json", getHandler(cb, ServiceEvent.UPDATE, jClass));
     }
 
     @Override
-    public <J> void update(String id, J item, final FeathersCallback<J> cb, final Class<J> jClass) {
-        String url = getURLForResource(id);
-        Log.d("REST:UPDATE", url);
-        getClientWithHeaders().put(url, getHandler(cb, ServiceEvent.UPDATE, jClass));
-    }
-
-    @Override
-    public <J> void patch(String id, JSONObject item, final FeathersCallback<J> cb, final Class<J> jClass) {
-        String url = getURLForResource(id);
+    public <J> void patch(String baseUrl, String serviceName, String id, JSONObject item, final FeathersCallback<J> cb, final Class<J> jClass) {
+        String url = getURLForResource(baseUrl, serviceName, id);
         Log.d("REST:PATCH", url);
 
         StringEntity entity = Serialization.getEntityForObject(item, gson);
@@ -214,7 +184,7 @@ public class FeathersRestClient extends IFeathersProvider {
 
     private void logEntity(StringEntity entity) {
         try {
-            Log.d("REST:CREATE", entity.getContent().toString());
+            Log.d("logEntity", entity.getContent().toString());
             String inputLine;
             BufferedReader br = new BufferedReader(new InputStreamReader(entity.getContent()));
             try {
@@ -231,33 +201,11 @@ public class FeathersRestClient extends IFeathersProvider {
 
     }
 
-    private String getURLForResource(String id) {
-        return this.mServiceUrl + "/" + id;
+    private String getURLForResource(String baseUrl, String serviceName, String id) {
+        return baseUrl + "/" + serviceName + "/" + id;
     }
 
 
 
-    /*
-        Service events
-    */
 
-    //@Override
-    public <J> void onCreated(final OnCreatedCallback<J> callback) {
-        mOnCreatedCallback = callback;
-    }
-
-    //@Override
-    public <J> void onUpdated(final OnUpdatedCallback<J> callback) {
-        mOnUpdatedCallback = callback;
-    }
-
-    // @Override
-    public <J> void onRemoved(final OnRemovedCallback<J> callback) {
-        mOnRemovedCallback = callback;
-    }
-
-    //@Override
-    public <J> void onPatched(final OnPatchedCallback<J> callback) {
-        mOnPatchedCallback = callback;
-    }
 }

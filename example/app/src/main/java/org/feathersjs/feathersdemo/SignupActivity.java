@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.EditText;
 
 import org.feathersjs.client.Feathers;
+import org.feathersjs.client.plugins.authentication.AuthResponse;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.feathersdemo.models.User;
 
@@ -27,9 +28,6 @@ public class SignupActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
-
-        mUsernameEditText.setText("testing123@123.com");
-        mPasswordEditText.setText("password");
     }
 
     protected void onDestroy() {
@@ -48,9 +46,10 @@ public class SignupActivity extends Activity {
             @Override
             public void onSuccess(User newUser) {
                 Log.d("LoginActivity", "create:onSuccess | " + newUser.email);
-                Feathers.getInstance().authenticate(user.email, user.password, new FeathersService.FeathersCallback() {
+                Feathers.getInstance().authenticate(user.email, user.password, new FeathersService.FeathersCallback<AuthResponse<User>>() {
+
                     @Override
-                    public void onSuccess(Object t) {
+                    public void onSuccess(AuthResponse<User> t) {
                         Log.d("LoginActivity", "authenticate:onSuccess | " + t.toString());
                         Intent intent = new Intent(SignupActivity.this, MainActivity.class);
                         startActivity(intent);
@@ -60,7 +59,7 @@ public class SignupActivity extends Activity {
                     public void onError(String errorMessage) {
                         Log.d("LoginActivity", "authenticate:onError | " + errorMessage);
                     }
-                });
+                }, User.class);
             }
 
             @Override

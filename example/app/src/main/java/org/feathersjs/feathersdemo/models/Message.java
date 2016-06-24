@@ -6,8 +6,8 @@ public class Message {
     public String _id;
     public String text;
     public String userId;
-    public User user;
     public String createdAt;
+    public User sentBy;
 
     @Override
     public boolean equals(Object o) {

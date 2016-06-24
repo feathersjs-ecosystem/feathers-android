@@ -23,7 +23,7 @@
             android:textColor="#000"
             android:textSize="20sp"
             android:padding="15dp"
-            android:text="username"
+            android:text=""
             />
 
         <EditText
@@ -33,7 +33,7 @@
             android:textColor="#000"
             android:textSize="20sp"
             android:padding="15dp"
-            android:text="password"
+            android:text=""
             android:inputType="textPassword" />
 
         <Button

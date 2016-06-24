@@ -3,30 +3,23 @@ package org.feathersjs.feathersdemo;
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
-import org.feathersjs.client.Feathers;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.service.OnCreatedCallback;
 import org.feathersjs.client.service.OnPatchedCallback;
 import org.feathersjs.client.service.OnRemovedCallback;
 import org.feathersjs.client.service.OnUpdatedCallback;
 import org.feathersjs.client.service.Result;
-import org.feathersjs.feathersdemo.models.Message;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+
 
 public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<K> {
     private ArrayList<T> mDataset;
     private Activity mActivity;
     FeathersService<T> mService;
-    private Class<K> mViewHolderClass;
     private int mResource;
 
     public ArrayList<T> getDataSet() {
@@ -48,9 +41,9 @@ public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extend
             @Override
             public void onCreated(final T item) {
                 Log.d("onCreated", item.toString());
+                mDataset.add(item);
                 mActivity.runOnUiThread(new Runnable() {
                     public void run() {
-                        mDataset.add(item);
                         notifyDataSetChanged();
                     }
                 });
@@ -61,18 +54,18 @@ public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extend
             @Override
             public void onRemoved(final T removedItem) {
                 Log.d("onRemoved", removedItem.toString());
+
+                Iterator<T> iter = mDataset.iterator();
+                while (iter.hasNext()) {
+                    T item = iter.next();
+                    if (item.equals(removedItem)) {
+                        iter.remove();
+                    }
+                }
+
                 mActivity.runOnUiThread(new Runnable() {
                     public void run() {
-
-                        Iterator<T> iter = mDataset.iterator();
-                        while (iter.hasNext()) {
-                            T item = iter.next();
-                            if (item.equals(removedItem)) {
-                                iter.remove();
-                                notifyDataSetChanged();
-                            }
-                        }
-
+                        notifyDataSetChanged();
                     }
                 });
             }
@@ -84,12 +77,19 @@ public class FeathersServiceAdapter<T, K extends RecyclerView.ViewHolder> extend
                 Log.d("onUpdated", updatedItem.toString());
                 mActivity.runOnUiThread(new Runnable() {
                     public void run() {
-                        for (T item : mDataset) {
-                            if (updatedItem.equals(item)) {
-                                mDataset.set(mDataset.indexOf(item), updatedItem);
+                        int currentIndex = 0;
+                        int indexToUpdate = 0;
+                        Iterator<T> iter = mDataset.iterator();
+                        while (iter.hasNext()) {
+                            T item = iter.next();
+                            if (item.equals(updatedItem)) {
+                                indexToUpdate = currentIndex;
+                                iter.remove();
                                 notifyDataSetChanged();
                             }
+                            currentIndex++;
                         }
+                        mDataset.add(indexToUpdate, updatedItem);
                     }
                 });
             }

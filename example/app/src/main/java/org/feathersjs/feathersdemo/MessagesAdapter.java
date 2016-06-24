@@ -1,59 +1,83 @@
 package org.feathersjs.feathersdemo;
 
-import android.support.v7.widget.RecyclerView;
+import android.app.Activity;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.facebook.drawee.view.SimpleDraweeView;
+
+import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.feathersdemo.models.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.util.Date;
 
-public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessageViewHolder> {
-    private ArrayList<Message> mDataset;
+public class MessagesAdapter extends FeathersServiceAdapter<Message, MessagesAdapter.MessageViewHolder> {
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    public static class MessageViewHolder extends RecyclerView.ViewHolder {
+    public MessagesAdapter(Activity activity, FeathersService<Message> service, int resource) {
+        super(activity, service, resource);
+    }
+
+    public static class MessageViewHolder extends FeathersViewHolder {
+        protected TextView vUsername;
         protected TextView vText;
-        protected CheckBox vCheckbox;
-
+        protected SimpleDraweeView vImage;
 
         public MessageViewHolder(View v) {
             super(v);
-            vText =  (TextView) v.findViewById(R.id.message_text);
+            vUsername = (TextView) v.findViewById(R.id.username);
+            vText = (TextView) v.findViewById(R.id.message_text);
+            vImage = (SimpleDraweeView) v.findViewById(R.id.my_image_view);
         }
-    }
-
-    // Provide a suitable constructor (depends on the kind of dataset)
-    public MessagesAdapter(ArrayList<Message> myDataset) {
-        mDataset = myDataset;
     }
 
     // Create new views (invoked by the layout manager)
     @Override
-    public MessagesAdapter.MessageViewHolder onCreateViewHolder(ViewGroup parent,
-                                                             int viewType) {
+    public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.
                 from(parent.getContext()).
                 inflate(R.layout.item_message, parent, false);
 
         return new MessageViewHolder(itemView);
     }
-
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(MessageViewHolder holder, int position) {
-        Message message = mDataset.get(position);
-        holder.vText.setText(message.text);
-    }
 
-    // Return the size of your dataset (invoked by the layout manager)
-    @Override
-    public int getItemCount() {
-        return mDataset.size();
+        final Message message = (Message) getDataSet().get(position);
+
+        holder.vText.setText(message.text);
+        if(message.sentBy != null) {
+            holder.vImage.setImageURI(Uri.parse(message.sentBy.avatar));
+            holder.vUsername.setText(message.sentBy.email);
+        }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final Message updatedMessage = message;
+                JSONObject obj = new JSONObject();
+                try {
+                    obj.put("text", "newTExt" + new Date().getTime());
+                    updatedMessage.text = obj.optString("text");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                mService.update(updatedMessage._id, updatedMessage, new FeathersService.FeathersCallback<Message>() {
+                    @Override
+                    public void onError(String errorMessage) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(Message t) {
+
+                    }
+                });
+            }
+        });
     }
 }

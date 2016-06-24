@@ -49,7 +49,7 @@ public class FeathersService<T> extends IFeathersService<T> {
 
     @Override
     public void find(final Map<String, String> params, final FeathersCallback<Result<T>> cb) {
-            mProvider.find(params, cb, mModelClass);
+            mProvider.find(mBaseUrl, mServiceName, params, cb, mModelClass);
     }
 
 //     Support passing no params
@@ -60,50 +60,48 @@ public class FeathersService<T> extends IFeathersService<T> {
 
     @Override
     public void get(String id, FeathersCallback<T> cb) {
-        mProvider.get(id, cb, mModelClass);
+        mProvider.get(mBaseUrl, mServiceName, id, cb, mModelClass);
     }
 
     @Override
     public void remove(String id, FeathersCallback<T> cb) {
-        mProvider.remove(id, cb, mModelClass);
+        mProvider.remove(mBaseUrl, mServiceName, id, cb, mModelClass);
     }
 
     @Override
     public <J> void create(J item, FeathersCallback<T> cb) {
-        mProvider.create(item, cb, mModelClass);
+        mProvider.create(mBaseUrl, mServiceName, item, cb, mModelClass);
     }
 
     @Override
     public void update(String id, T item, FeathersCallback<T> cb) {
-        mProvider.update(id, item, cb, mModelClass);
+        mProvider.update(mBaseUrl, mServiceName, id, item, cb, mModelClass);
     }
 
     @Override
     public void patch(String id, JSONObject item, FeathersCallback<T> cb) {
-        mProvider.patch(id, item, cb, mModelClass);
+        mProvider.patch(mBaseUrl, mServiceName, id, item, cb, mModelClass);
     }
-
-
 
 
     /* Events */
     public <J> FeathersService onCreated(final OnCreatedCallback<J> callback) {
-        mProvider.onCreated(callback);
+        mProvider.onCreated(mServiceName, callback);
         return this;
     }
 
     public <J> FeathersService onUpdated(final OnUpdatedCallback<J> callback) {
-        mProvider.onUpdated(callback);
+        mProvider.onUpdated(mServiceName, callback);
         return this;
     }
 
     public <J> FeathersService onRemoved(final OnRemovedCallback<J> callback) {
-        mProvider.onRemoved(callback);
+        mProvider.onRemoved(mServiceName, callback);
         return this;
     }
 
     public <J> FeathersService onPatched(final OnPatchedCallback<J> callback) {
-        mProvider.onPatched(callback);
+        mProvider.onPatched(mServiceName, callback);
         return this;
     }
 }

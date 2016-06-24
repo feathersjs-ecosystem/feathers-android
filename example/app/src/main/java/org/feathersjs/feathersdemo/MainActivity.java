@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
     @Bind(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
 
-    YourAdapter<Message> mAdapter;
+    MessagesAdapter mAdapter;
     FeathersService<Message> messageService;
     ArrayList<Message> mItems;
 
@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
     private void initializeAdapter() {
         mItems = new ArrayList<>();
         messageService = Feathers.getInstance().service("messages", Message.class);
-        mAdapter = new YourAdapter(this, messageService, R.layout.item_message);
+        mAdapter = new MessagesAdapter(this, messageService, R.layout.item_message);
         mRecyclerView.setAdapter(mAdapter);
 
         // use this setting to improve performance if you know that changes

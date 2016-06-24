@@ -4,12 +4,17 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import org.feathersjs.client.Feathers;
+import org.feathersjs.client.plugins.providers.FeathersRestClient;
+import org.feathersjs.client.plugins.providers.FeathersSocketClient;
 import org.feathersjs.client.plugins.storage.IStorageProvider;
 import org.feathersjs.client.plugins.storage.InMemoryStorageProvider;
 import org.feathersjs.client.service.FeathersService;
 import org.feathersjs.client.interfaces.IFeathersConfigurable;
 
+import org.feathersjs.client.utilities.Serialization;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -104,7 +109,7 @@ public class FeathersAuthentication extends IFeathersConfigurable {
         //TODO: Add hooks to populate header and params
     }
 
-    public void authenticate(AuthenticationType authType, String identifier, String password, final FeathersService.FeathersCallback cb) {
+    public <J> void authenticate(AuthenticationType authType, String identifier, String password, final FeathersService.FeathersCallback<AuthResponse<J>> cb, final Class<J> jClass) {
 
         JSONObject payload = new JSONObject();
         try {
@@ -129,22 +134,49 @@ public class FeathersAuthentication extends IFeathersConfigurable {
 
         //TODO: Get token from storage and attempt login if present
 
-        mApp.service(endPoint, JSONObject.class).create(payload, new FeathersService.FeathersCallback<JSONObject>() {
 
-            @Override
-            public void onSuccess(JSONObject t) {
-                Log.d("feathers-auth", "authenticate:onSuccess | " + t);
-                String token = t.optString("token");
-                mStorage.setItem(mOptions.tokenKey, token);
-                cb.onSuccess(t);
-            }
+        if(mApp.getProvider() instanceof FeathersRestClient) {
+            mApp.service(endPoint, JSONObject.class).create(payload, new FeathersService.FeathersCallback<JSONObject>() {
 
-            @Override
-            public void onError(String errorMessage) {
-                Log.e("feathers-auth", "authenticate:onError | " + errorMessage);
-                cb.onError(errorMessage);
-            }
-        });
+                @Override
+                public void onSuccess(JSONObject t) {
+                    Log.d("feathers-auth", "authenticate:onSuccess | " + t);
+
+                    AuthResponse<J> response = Serialization.deserializeAuthResponse(t, jClass, new Gson());
+
+                    String token = t.optString("token");
+                    mStorage.setItem(mOptions.tokenKey, token);
+                    //TODO: Save user to storage
+                    cb.onSuccess(response);
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Log.e("feathers-auth", "authenticate:onError | " + errorMessage);
+                    cb.onError(errorMessage);
+                }
+            });
+        } else {
+            FeathersSocketClient socketClient = (FeathersSocketClient)mApp.getProvider();
+            socketClient.authenticate(payload, new FeathersService.FeathersCallback<AuthResponse<J>>(){
+
+                @Override
+                public void onSuccess(AuthResponse<J> t) {
+                    Log.d("feathers-auth", "authenticate:onSuccess | " + t);
+                    String token = t.token;
+                    mStorage.setItem(mOptions.tokenKey, token);
+                    cb.onSuccess(t);
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Log.e("feathers-auth", "authenticate:onError | " + errorMessage);
+                    cb.onError(errorMessage);
+                }
+            }, jClass);
+        }
+
+        //app.io.emit('authenticate', options);
     }
 
     public void logout() {
