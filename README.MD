@@ -1,7 +1,7 @@
 # feathers-android
 A feathers client for Android
 
-### THIS IS CURRENTLY A WORK IN PROGRESS
+### This project is currently not under active development.
 
 ## Running the example
 1. Clone down the [feathers-chat](https://github.com/feathersjs/feathers-chat) API server.
